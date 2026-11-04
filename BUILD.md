@@ -33,33 +33,33 @@ No gameplay yet: no clock, no scoring, no cue animation.
 | D9 | No personal data, accounts or analytics in v1 | Simplest safe path for a youth audience |
 | D10 | Pull requests run checks only; `main` deploys | Nothing reaches the live site without passing checks |
 | D11 | The validator bans em dashes, en dashes and `--` in rules notes | Enforces the copy rule on content as it scales |
+| D12 | One 30-second clock per round; reps run back to back (Marty, 2026-11-04) | Keeps reads quick and the round short enough to replay |
+| D13 | GitHub Pages Source set to GitHub Actions (Marty, 2026-11-04) | `main` deploys through `.github/workflows/deploy.yml` |
 
 ## Open questions
 
 Each one has a recommendation. Answers go into `SPEC.md`.
 
-1. **The 30-second clock:** one clock per round with reps back to back, or 30 seconds
-   per rep? *Recommend per round.* Per rep would make each read feel slow.
-2. **Speed bonus:** +1 for a best or good tap in the first half of the read window?
+1. **Speed bonus:** +1 for a best or good tap in the first half of the read window?
    *Recommend yes, as written.* Tune after playtests.
-3. **Fakes in shooter mode:** should the goalie ever bait the shooter (show an open spot,
+2. **Fakes in shooter mode:** should the goalie ever bait the shooter (show an open spot,
    then close it)? *Recommend no for v1.*
-4. **Brand colors:** this build uses navy #001F58, red #FC222D and off-white #FAF7F6 as
+3. **Brand colors:** this build uses navy #001F58, red #FC222D and off-white #FAF7F6 as
    requested. LAXLEARN and the Parent Guide use navy #00205B and red #C8102E. Which set
    is current? The red here fails contrast for small text, so it's limited to large
    text and accents (see `SPEC.md` section 8).
-5. **Font license:** does the USA Lacrosse license for Vanguard CF and Mundial cover
+4. **Font license:** does the USA Lacrosse license for Vanguard CF and Mundial cover
    self-hosted web use (WOFF2)?
-6. **Content review:** who signs off on boys and girls scenarios before `status` goes
+5. **Content review:** who signs off on boys and girls scenarios before `status` goes
    to `approved`?
-7. **Rules notes:** should each note cite a rule (NFHS, USA Lacrosse youth rules), or
+6. **Rules notes:** should each note cite a rule (NFHS, USA Lacrosse youth rules), or
    stay as plain coaching tips?
-8. **Mirroring:** can the game flip a scenario left to right (angle, hand and zones) to
+7. **Mirroring:** can the game flip a scenario left to right (angle, hand and zones) to
    double the pool? Only if the rules note doesn't depend on side.
-9. **Practice mode in v1?** *Recommend yes.* It's the main timing accommodation.
-10. **Hosting:** GitHub Pages on `joyner-usal`, or a usalacrosse.com subdomain later?
+8. **Practice mode in v1?** *Recommend yes.* It's the main timing accommodation.
+9. **Hosting:** GitHub Pages on `joyner-usal`, or a usalacrosse.com subdomain later?
     Pages on a private repo needs a paid GitHub plan.
-11. **Name styling:** "Read and Rip" or "Read & Rip"?
+10. **Name styling:** "Read and Rip" or "Read & Rip"?
 
 ## Next steps
 

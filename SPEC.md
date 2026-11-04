@@ -53,8 +53,8 @@ Start screen  ->  Round (30 s clock)  ->  Round summary  ->  Play again / Change
 
 ### Round
 
-- A round runs on a **30-second clock**, like a shot clock. **(open: per round, or per rep)**
-  This spec assumes per round: reps run back to back until the clock hits zero.
+- A round runs on one **30-second clock**, like a shot clock. Reps run back to back
+  until the clock hits zero. (Decided 2026-11-04, BUILD.md D12.)
 - The clock **pauses during feedback** so reading the result never costs time.
 - If the clock hits zero mid-rep, that rep plays out and counts (a buzzer beater).
 - The player can pause. Pausing hides the field so the cue can't be studied on pause.
