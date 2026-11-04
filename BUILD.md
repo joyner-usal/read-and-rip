@@ -73,9 +73,9 @@ Worth knowing: the clock stops during feedback, so a 30-second round takes about
 | D16 | Scenarios mirror left to right unless `mirror: false` (Marty, 2026-11-04). Copies get `-m` and count in the pool. Validator warns on side words in mirrored rules notes | Doubles the pool and trains both sides. The warning catches notes that stop being true when flipped |
 | D17 | Practice mode in v1 (Marty, 2026-11-04): no clock, no ramp, windows doubled, rules note every rep, never a best | The main timing accommodation, and a place to learn without pressure |
 | D18 | Brand colors confirmed per HQ D73 (Marty, 2026-11-04): navy #001F58, red #FC222D | Closes the color question. Red stays limited to large text and accents for contrast |
-| D19 | Timed rounds show the rules note only in the summary, not after each rep (Claude, Phase 1 default; confirm) | A 1.2 s feedback beat is too short to read a note. Practice shows it every rep (D17) |
-| D20 | Practice draws from every difficulty, fakes included (Claude, Phase 1 default; confirm) | Practice has no ramp, so there is no level to gate fakes on |
-| D21 | Production builds load approved scenarios only. Dev, and any build with `VITE_INCLUDE_DRAFTS=true`, also load drafts and show a "Draft content" banner (Claude, Phase 1) | Keeps unreviewed content off the live site while still allowing playtests |
+| D19 | Timed rounds show the rules note only in the summary, not after each rep (Claude default; confirmed by Marty, 2026-11-04) | A 1.2 s feedback beat is too short to read a note. Practice shows it every rep (D17) |
+| D20 | Practice draws from every difficulty, fakes included (Claude default; confirmed by Marty, 2026-11-04) | Practice has no ramp, so there is no level to gate fakes on |
+| D21 | Production builds load approved scenarios only. Dev, and any build with `VITE_INCLUDE_DRAFTS=true`, also load drafts and show a "Draft content" banner (Claude default; confirmed by Marty with D23, 2026-11-04) | Keeps unreviewed content off the live site while still allowing playtests |
 | D22 | Fonts are never committed (repo is public). `.gitignore` blocks font files in `brand/fonts/` (Marty, 2026-11-04) | License protection. Fallback fonts render until licensed hosting is sorted out |
 | D23 | Until launch, the live site plays draft scenarios with the "Draft content" banner (Marty, 2026-11-04). `deploy.yml` sets `VITE_INCLUDE_DRAFTS=true`; remove that line at launch | Lets Marty and reviewers playtest on phones before content is approved |
 
