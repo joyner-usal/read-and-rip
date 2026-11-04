@@ -83,7 +83,7 @@ the rules notes from missed reps so the player can learn from them.
 | Good | **+1** | Tapped one of `goodZones` |
 | Miss | **0** | Tapped any other zone |
 | Timeout | **0** | No tap before the read window closed |
-| Speed bonus | **+1** | Added to a best or good tap made in the first half of the read window **(open: threshold and value)** |
+| Speed bonus | **+1** | Added to a best or good tap made in the first half of the read window (BUILD.md D14; tune after playtests) |
 | Early tap on a fake | **-1** | Goalie mode only. Scenario has `fake: true` and the tap came before `releaseMs` |
 
 - Highest single rep: 4 (best plus speed bonus).
