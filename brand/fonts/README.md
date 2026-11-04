@@ -15,6 +15,6 @@ Nothing breaks.
 
 **Never commit these files.** The repo is public, and `.gitignore` blocks font
 files in this folder (BUILD.md D22). Drop them in locally to preview the real type;
-production keeps the fallbacks until licensed web hosting is settled (BUILD.md open
-question 1). If the weights you have differ, rename the `src` lines in
+v1 ships with the fallbacks (BUILD.md D24) until HQ confirms web rights and
+hosting. If the weights you have differ, rename the `src` lines in
 `brand/tokens.css` to match.
