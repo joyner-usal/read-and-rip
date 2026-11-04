@@ -63,7 +63,7 @@ public/icons/     app icons (code-drawn SVG, PNGs rendered from it)
 1. Copy a file in `scenarios/boys/` or `scenarios/girls/`.
 2. Rename it to the new `id` (for example `girls-goalie-hip-turn-004.json`).
 3. Fill in the fields. Zones are named from the shooter's view (see `SPEC.md`).
-4. Keep `status: "draft"` until a coach or official signs off.
+4. Keep `status: "draft"`. Only Marty switches a scenario to `approved` (BUILD.md D28).
 5. Run `npm run validate`.
 
 ## Brand rules

@@ -82,14 +82,11 @@ Worth knowing: the clock stops during feedback, so a 30-second round takes about
 | D25 | `rulesNote` is a plain coaching tip in peer-advice voice, not a rule citation (Marty, 2026-11-04) | Clear for kids and parents, and doesn't go stale when rulebooks change. The field keeps its name |
 | D26 | The name is "Read and Rip", written out with "and" (Marty, 2026-11-04) | Reads cleanly aloud and in search |
 | D27 | Stay on GitHub Pages through playtesting; pick a usalacrosse.com address closer to launch (Marty, 2026-11-04) | No setup needed now. A subdomain later needs one DNS record |
+| D28 | Marty reviews boys and girls scenarios and is the only one who sets `status` to `approved`, until dedicated reviewers are named (Marty, 2026-11-04) | One clear sign-off for v1 content |
 
 ## Open questions
 
-Each one has a recommendation. Answers go into `SPEC.md`.
-
-1. **Content review:** who signs off on boys and girls scenarios before `status` goes
-   to `approved`?
-
+None right now. New questions go here, one at a time.
 
 ## Next steps
 
@@ -121,5 +118,4 @@ Known limits to pick up in Phase 2:
 See open questions above. Plus:
 
 - Approved USA Lacrosse logo files (SVG, light and dark backgrounds)
-- Names of scenario reviewers for boys and girls
 - Any source material for cues (coaching drills, goalie training guides)
