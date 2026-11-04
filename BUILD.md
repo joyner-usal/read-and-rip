@@ -31,7 +31,8 @@ Checked: validator (18 valid, 0 warnings), typecheck, 114 unit tests, production
 Played at iPhone 13 size (390 x 664): full timed rounds to the summary, Practice, pause,
 a shooter bait rep, goalie mode with reduced motion, settings. No console errors, no
 scrolling on the game screen, every zone at least 67 x 71 px, result labels fit their
-cells. The production build shows "No approved scenarios yet" (D21).
+cells. A build without drafts shows "No approved scenarios yet" (D21); the live site
+builds with drafts and a banner until launch (D23).
 
 Worth knowing: the clock stops during feedback, so a 30-second round takes about 60 to
 75 seconds of real time for a fast player.
@@ -76,6 +77,7 @@ Worth knowing: the clock stops during feedback, so a 30-second round takes about
 | D20 | Practice draws from every difficulty, fakes included (Claude, Phase 1 default; confirm) | Practice has no ramp, so there is no level to gate fakes on |
 | D21 | Production builds load approved scenarios only. Dev, and any build with `VITE_INCLUDE_DRAFTS=true`, also load drafts and show a "Draft content" banner (Claude, Phase 1) | Keeps unreviewed content off the live site while still allowing playtests |
 | D22 | Fonts are never committed (repo is public). `.gitignore` blocks font files in `brand/fonts/` (Marty, 2026-11-04) | License protection. Fallback fonts render until licensed hosting is sorted out |
+| D23 | Until launch, the live site plays draft scenarios with the "Draft content" banner (Marty, 2026-11-04). `deploy.yml` sets `VITE_INCLUDE_DRAFTS=true`; remove that line at launch | Lets Marty and reviewers playtest on phones before content is approved |
 
 ## Open questions
 
@@ -90,9 +92,7 @@ Each one has a recommendation. Answers go into `SPEC.md`.
    stay as plain coaching tips?
 4. **Hosting:** GitHub Pages on `joyner-usal`, or a usalacrosse.com subdomain later?
 5. **Name styling:** "Read and Rip" or "Read & Rip"?
-6. **Live site before content is approved:** the live site plays approved scenarios
-   only (D21), and all scenarios are drafts, so it shows "No approved scenarios yet".
-   Should `main` build with drafts and the "Draft content" banner until launch?
+
 
 ## Next steps
 

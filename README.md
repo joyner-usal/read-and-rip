@@ -5,8 +5,8 @@ grid before time runs out. Play as the shooter or the goalie, on a boys or girls
 Anyone can play. Scores stay on your device.
 
 **Status:** Phase 1 (playable core). Timed rounds, Practice mode, both positions, both
-fields, fakes and mirrored scenarios all work. Every scenario is still a draft, so the
-live site says "No approved scenarios yet" until coaches approve content. See
+fields, fakes and mirrored scenarios all work. Every scenario is still a draft. Until launch the live
+site plays them with a "Draft content" banner (BUILD.md D23). See
 `BUILD.md`.
 
 ## How to play
@@ -78,6 +78,8 @@ public/icons/     app icons (code-drawn SVG, PNGs rendered from it)
 
 Every push to `main` runs the checks and publishes to GitHub Pages through
 `.github/workflows/deploy.yml`. Pull requests run the checks without publishing.
+At launch, delete the `VITE_INCLUDE_DRAFTS` line in that file so only approved
+scenarios ship.
 
 One-time setup: in the repo, go to **Settings > Pages** and set **Source** to
 **GitHub Actions**. The site lands at `https://<owner>.github.io/read-and-rip/`.
