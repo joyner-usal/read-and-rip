@@ -160,7 +160,7 @@ Schema: `schemas/scenario.schema.json`. Check with `npm run validate`.
 | `bestZone` | zone | |
 | `goodZones` | zone list, 0 to 4 | Can't include `bestZone` |
 | `difficulty` | 1 to 5 | Drives the ramp |
-| `rulesNote` | string, 10 to 280 chars | Plain English. Shown after the rep. No em dashes |
+| `rulesNote` | string, 10 to 280 chars | A plain coaching tip in peer-advice voice, not a rule citation (D25). Shown in Practice and in Reads to review. No em dashes |
 | `status` | `draft` or `approved` | Only approved scenarios ship. `npm run validate -- --strict` fails on drafts |
 
 `schemaVersion`, `releaseMs`, `difficulty` and `status` were added to the requested
