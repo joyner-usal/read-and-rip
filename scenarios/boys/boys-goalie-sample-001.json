@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "boys-goalie-sample-001",
+  "game": "boys",
+  "mode": "goalie",
+  "approachAngleDeg": 20,
+  "shooterHand": "left",
+  "cueType": "stick-fake",
+  "fake": true,
+  "readWindowMs": 1800,
+  "releaseMs": 1100,
+  "bestZone": "low-left",
+  "goodZones": ["low-center"],
+  "difficulty": 3,
+  "rulesNote": "SAMPLE, needs coach review. The first stick move is a fake. Stay set, then follow the hands on the real release.",
+  "status": "draft"
+}

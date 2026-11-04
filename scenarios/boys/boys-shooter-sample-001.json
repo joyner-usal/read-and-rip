@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "boys-shooter-sample-001",
+  "game": "boys",
+  "mode": "shooter",
+  "approachAngleDeg": -30,
+  "shooterHand": "right",
+  "cueType": "goalie-stick-high",
+  "fake": false,
+  "readWindowMs": 2000,
+  "bestZone": "low-right",
+  "goodZones": ["low-center", "mid-right"],
+  "difficulty": 1,
+  "rulesNote": "SAMPLE, needs coach review. Goalie's stick is high, so the low far corner is open. Shoot where the stick is not.",
+  "status": "draft"
+}

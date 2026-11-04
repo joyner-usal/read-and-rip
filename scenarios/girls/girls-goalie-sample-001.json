@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "girls-goalie-sample-001",
+  "game": "girls",
+  "mode": "goalie",
+  "approachAngleDeg": -15,
+  "shooterHand": "right",
+  "cueType": "hands-low",
+  "fake": false,
+  "readWindowMs": 1600,
+  "bestZone": "low-right",
+  "goodZones": ["low-center", "mid-right"],
+  "difficulty": 2,
+  "rulesNote": "SAMPLE, needs coach review. Hands drop below the shoulder, so expect a low shot. Get the stick down early.",
+  "status": "draft"
+}
