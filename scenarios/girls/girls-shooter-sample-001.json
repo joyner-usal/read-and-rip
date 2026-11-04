@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "girls-shooter-sample-001",
+  "game": "girls",
+  "mode": "shooter",
+  "approachAngleDeg": 0,
+  "shooterHand": "right",
+  "cueType": "goalie-weight-shift",
+  "fake": false,
+  "readWindowMs": 2200,
+  "bestZone": "mid-left",
+  "goodZones": ["top-left", "low-left"],
+  "difficulty": 1,
+  "rulesNote": "SAMPLE, needs coach review. Goalie leans to your right. Go opposite. Shooting space and the 8 meter arc apply.",
+  "status": "draft"
+}

@@ -1,0 +1,118 @@
+/*
+ * Read and Rip brand tokens. The only file allowed to hold color values.
+ * Components read these variables; canvas code reads them at draw time
+ * through src/ui/theme.ts. Never put a hex value in component code.
+ */
+
+/* Licensed brand fonts. Files are placeholders until added: see brand/fonts/README.md.
+ * If a file is missing the browser falls back to the next font in the stack. */
+@font-face {
+  font-family: 'Vanguard CF';
+  src: url('./fonts/VanguardCF-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vanguard CF';
+  src: url('./fonts/VanguardCF-Heavy.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Mundial';
+  src: url('./fonts/Mundial-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Mundial';
+  src: url('./fonts/Mundial-DemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Core brand */
+  --rr-navy: #001F58;
+  --rr-red: #FC222D;
+  --rr-off-white: #FAF7F6;
+  --rr-white: #FFFFFF;
+  --rr-black: #0A0F1C;
+
+  /* Neutrals (derived from navy) */
+  --rr-gray-100: #ECEAEA;
+  --rr-gray-300: #C5C8D0;
+  --rr-gray-500: #7A8194;
+  --rr-gray-700: #3C4560;
+
+  /* Field drawing. Placeholder values; tune with real art direction. */
+  --rr-turf: #2F6B3A;
+  --rr-turf-line: #FFFFFF;
+  --rr-crease: #FFFFFF;
+  --rr-goal-pipe: #F26A21;
+  --rr-goal-net: #FFFFFF;
+  --rr-goalie-fill: #3C4560;
+  --rr-stick-shaft: #0A0F1C;
+  --rr-stick-head: #FFFFFF;
+  --rr-stick-mesh: #C5C8D0;
+
+  /* Roles */
+  --rr-bg: var(--rr-off-white);
+  --rr-surface: var(--rr-white);
+  --rr-text: var(--rr-navy);
+  --rr-text-muted: var(--rr-gray-700);
+  --rr-text-on-dark: var(--rr-off-white);
+  --rr-accent: var(--rr-red);
+  --rr-focus: var(--rr-red);
+  --rr-grid-line: rgb(255 255 255 / 0.7);
+  --rr-grid-cell-hover: rgb(255 255 255 / 0.18);
+
+  /* Feedback roles. Color is never the only signal: every result also
+   * gets an icon shape and a text label (SPEC.md, Accessibility). */
+  --rr-result-best: #1E7B45;
+  --rr-result-good: #8A6D00;
+  --rr-result-miss: var(--rr-red);
+  --rr-result-fake: var(--rr-gray-700);
+
+  /* Type */
+  --rr-font-display: 'Vanguard CF', 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', system-ui, sans-serif;
+  --rr-font-body: 'Mundial', 'Avenir Next', 'Avenir', 'Segoe UI', Roboto, Arial, sans-serif;
+  --rr-step--1: 0.875rem;
+  --rr-step-0: 1rem;
+  --rr-step-1: 1.25rem;
+  --rr-step-2: 1.75rem;
+  --rr-step-3: 2.5rem;
+  --rr-step-4: 3.5rem;
+
+  /* Space and shape. Flat and square, like usalacrosse.com. */
+  --rr-space-1: 4px;
+  --rr-space-2: 8px;
+  --rr-space-3: 12px;
+  --rr-space-4: 16px;
+  --rr-space-5: 24px;
+  --rr-space-6: 32px;
+  --rr-radius: 0;
+  --rr-tap-min: 48px;
+
+  /* Motion. Reduced motion zeroes these; see bottom of file. */
+  --rr-dur-fast: 120ms;
+  --rr-dur-med: 240ms;
+  --rr-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --rr-dur-fast: 0ms;
+    --rr-dur-med: 0ms;
+  }
+}
+
+/* In-app override (Settings > Reduced motion: On), set on <html>. */
+:root[data-reduced-motion='on'] {
+  --rr-dur-fast: 0ms;
+  --rr-dur-med: 0ms;
+}

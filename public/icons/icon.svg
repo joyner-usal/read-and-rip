@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Code-drawn placeholder icon: a goal mouth with the 3x3 grid and one zone picked.
+       Colors match brand/tokens.css (--rr-navy, --rr-off-white, --rr-red). -->
+  <rect width="512" height="512" fill="#001F58"/>
+  <g fill="none" stroke="#FAF7F6">
+    <path d="M136 400V136h240v264" stroke-width="22" stroke-linejoin="miter"/>
+    <path d="M216 147v253M296 147v253M147 216h218M147 296h218" stroke-width="6" stroke-dasharray="14 10"/>
+  </g>
+  <rect x="301" y="301" width="64" height="88" fill="#FC222D"/>
+</svg>
