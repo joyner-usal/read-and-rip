@@ -28,7 +28,7 @@ No gameplay yet: no clock, no scoring, no cue animation.
 | D4 | Colors only in `brand/tokens.css`. Canvas reads them at draw time | Matches the no-hex rule. Exceptions: manifest colors, `theme-color` meta, icon SVG (can't read CSS) |
 | D5 | Fonts are self-hosted. No Google Fonts | Works offline; no third-party requests from a youth game |
 | D6 | Fields added to the schema: `schemaVersion`, `releaseMs`, `difficulty`, `status` | The ramp needs difficulty. The fake penalty needs to know when the real shot is released. Status keeps unreviewed content from shipping |
-| D7 | Fakes are goalie mode only in v1 | The -1 rule is written for goalies. See open question 3 |
+| D7 | ~~Fakes are goalie mode only in v1~~ Replaced by D15 | |
 | D8 | One storage key, versioned, with ids, owner and `syncedAt` on each record | Accounts can sync later without reshaping data |
 | D9 | No personal data, accounts or analytics in v1 | Simplest safe path for a youth audience |
 | D10 | Pull requests run checks only; `main` deploys | Nothing reaches the live site without passing checks |
@@ -36,29 +36,31 @@ No gameplay yet: no clock, no scoring, no cue animation.
 | D12 | One 30-second clock per round; reps run back to back (Marty, 2026-11-04) | Keeps reads quick and the round short enough to replay |
 | D13 | GitHub Pages Source set to GitHub Actions (Marty, 2026-11-04) | `main` deploys through `.github/workflows/deploy.yml` |
 | D14 | Speed bonus +1 for a best or good tap in the first half of the read window (Marty, 2026-11-04) | Rewards quick, correct reads. Threshold and value get tuned after playtests |
+| D15 | Fakes in both modes (Marty, 2026-11-04). Shooter mode: goalie shows `baitZone` open, closes it at `closeMs`; tapping it is "Took the bait 0". Goalie mode keeps the -1 early tap. Fakes only at ramp level 3 and up | Both positions get fooled in real games; reading past a fake is the skill |
+| D16 | Scenarios mirror left to right unless `mirror: false` (Marty, 2026-11-04). Copies get `-m` and count in the pool. Validator warns on side words in mirrored rules notes | Doubles the pool and trains both sides. The warning catches notes that stop being true when flipped |
+| D17 | Practice mode in v1 (Marty, 2026-11-04): no clock, no ramp, windows doubled, rules note every rep, never a best | The main timing accommodation, and a place to learn without pressure |
+| D18 | Brand colors confirmed per HQ D73 (Marty, 2026-11-04): navy #001F58, red #FC222D | Closes the color question. Red stays limited to large text and accents for contrast |
+| D19 | Timed rounds show the rules note only in the summary, not after each rep (Claude, Phase 1 default; confirm) | A 1.2 s feedback beat is too short to read a note. Practice shows it every rep (D17) |
+| D20 | Practice draws from every difficulty, fakes included (Claude, Phase 1 default; confirm) | Practice has no ramp, so there is no level to gate fakes on |
+| D21 | Production builds load approved scenarios only. Dev, and any build with `VITE_INCLUDE_DRAFTS=true`, also load drafts and show a "Draft content" banner (Claude, Phase 1) | Keeps unreviewed content off the live site while still allowing playtests |
+| D22 | Fonts are never committed (repo is public). `.gitignore` blocks font files in `brand/fonts/` (Marty, 2026-11-04) | License protection. Fallback fonts render until licensed hosting is sorted out |
 
 ## Open questions
 
 Each one has a recommendation. Answers go into `SPEC.md`.
 
-1. **Fakes in shooter mode:** should the goalie ever bait the shooter (show an open spot,
-   then close it)? *Recommend no for v1.*
-2. **Brand colors:** this build uses navy #001F58, red #FC222D and off-white #FAF7F6 as
-   requested. LAXLEARN and the Parent Guide use navy #00205B and red #C8102E. Which set
-   is current? The red here fails contrast for small text, so it's limited to large
-   text and accents (see `SPEC.md` section 8).
-3. **Font license:** does the USA Lacrosse license for Vanguard CF and Mundial cover
-   self-hosted web use (WOFF2)?
-4. **Content review:** who signs off on boys and girls scenarios before `status` goes
+1. **Font hosting:** the repo is public, so font files can't live in it (D22). Where
+   should licensed Vanguard CF and Mundial WOFF2 files be served from, if at all?
+   Until then the fallback fonts show.
+2. **Content review:** who signs off on boys and girls scenarios before `status` goes
    to `approved`?
-5. **Rules notes:** should each note cite a rule (NFHS, USA Lacrosse youth rules), or
+3. **Rules notes:** should each note cite a rule (NFHS, USA Lacrosse youth rules), or
    stay as plain coaching tips?
-6. **Mirroring:** can the game flip a scenario left to right (angle, hand and zones) to
-   double the pool? Only if the rules note doesn't depend on side.
-7. **Practice mode in v1?** *Recommend yes.* It's the main timing accommodation.
-8. **Hosting:** GitHub Pages on `joyner-usal`, or a usalacrosse.com subdomain later?
-    Pages on a private repo needs a paid GitHub plan.
-9. **Name styling:** "Read and Rip" or "Read & Rip"?
+4. **Hosting:** GitHub Pages on `joyner-usal`, or a usalacrosse.com subdomain later?
+5. **Name styling:** "Read and Rip" or "Read & Rip"?
+6. **Live site before content is approved:** the live site plays approved scenarios
+   only (D21), and all scenarios are drafts, so it shows "No approved scenarios yet".
+   Should `main` build with drafts and the "Draft content" banner until launch?
 
 ## Next steps
 

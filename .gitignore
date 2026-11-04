@@ -3,3 +3,8 @@ dist
 dev-dist
 *.tsbuildinfo
 .DS_Store
+# Licensed fonts: never commit (public repo, D22). See brand/fonts/README.md
+brand/fonts/*.woff2
+brand/fonts/*.woff
+brand/fonts/*.otf
+brand/fonts/*.ttf
