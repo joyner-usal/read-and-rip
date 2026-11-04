@@ -80,6 +80,7 @@ Worth knowing: the clock stops during feedback, so a 30-second round takes about
 | D23 | Until launch, the live site plays draft scenarios with the "Draft content" banner (Marty, 2026-11-04). `deploy.yml` sets `VITE_INCLUDE_DRAFTS=true`; remove that line at launch | Lets Marty and reviewers playtest on phones before content is approved |
 | D24 | v1 ships with the fallback fonts; no brand font files are loaded (Marty, 2026-11-04) | Revisit once HQ confirms web rights and a hosting place for Vanguard CF and Mundial |
 | D25 | `rulesNote` is a plain coaching tip in peer-advice voice, not a rule citation (Marty, 2026-11-04) | Clear for kids and parents, and doesn't go stale when rulebooks change. The field keeps its name |
+| D26 | The name is "Read and Rip", written out with "and" (Marty, 2026-11-04) | Reads cleanly aloud and in search |
 
 ## Open questions
 
@@ -88,7 +89,6 @@ Each one has a recommendation. Answers go into `SPEC.md`.
 1. **Content review:** who signs off on boys and girls scenarios before `status` goes
    to `approved`?
 2. **Hosting:** GitHub Pages on `joyner-usal`, or a usalacrosse.com subdomain later?
-3. **Name styling:** "Read and Rip" or "Read & Rip"?
 
 
 ## Next steps
