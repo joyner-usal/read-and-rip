@@ -16,5 +16,7 @@ Nothing breaks.
 **Never commit these files.** The repo is public, and `.gitignore` blocks font
 files in this folder (BUILD.md D22). Drop them in locally to preview the real type;
 v1 ships with the fallbacks (BUILD.md D24) until HQ confirms web rights and
-hosting. If the weights you have differ, rename the `src` lines in
+hosting. The `@font-face` rules in `brand/tokens.css` are commented out
+so browsers don't request files that aren't there; uncomment them and point the
+`src` URLs at the approved host to turn the fonts on. If the weights you have differ, rename the `src` lines in
 `brand/tokens.css` to match.
