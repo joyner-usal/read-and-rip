@@ -20,14 +20,17 @@ export interface Settings {
   game: Game | null;
   mode: Mode;
   reducedMotion: MotionSetting;
+  /** Not used yet: no sounds in v1. Kept so saved data doesn't change shape later. */
   sound: boolean;
   haptics: boolean;
+  /** Read windows x1.5 (SPEC.md section 8). Bests kept apart. */
+  longerWindows: boolean;
 }
 
 export interface RepResult {
   scenarioId: string;
   tappedZone: string | null;
-  outcome: 'best' | 'good' | 'miss' | 'early' | 'timeout';
+  outcome: 'best' | 'good' | 'miss' | 'timeout' | 'early' | 'bait';
   responseMs: number | null;
   points: number;
 }
@@ -41,13 +44,20 @@ export interface SessionRecord {
   endedAt: string;
   score: number;
   reps: RepResult[];
+  /** Practice sessions never set a best (D17). Missing means false. */
+  practice?: boolean;
+  /** Played with Longer read windows. Missing means false. */
+  longerWindows?: boolean;
   /** Scenario content version, so old scores stay comparable. */
   contentVersion: string;
   /** Null until uploaded to an account. */
   syncedAt: string | null;
 }
 
-export type BestKey = `${Game}:${Mode}`;
+export type BestKey = `${Game}:${Mode}` | `${Game}:${Mode}:long`;
+
+export const bestKey = (game: Game, mode: Mode, longerWindows: boolean): BestKey =>
+  longerWindows ? `${game}:${mode}:long` : `${game}:${mode}`;
 
 export interface BestScore {
   score: number;

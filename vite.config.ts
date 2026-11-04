@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -6,8 +9,18 @@ import { VitePWA } from 'vite-plugin-pwa';
 // sets BASE_PATH; local dev falls back to the root.
 const base = process.env.BASE_PATH ?? '/';
 
+// Short hash of every scenario file, stamped on saved sessions as contentVersion.
+function contentVersion(): string {
+  const h = createHash('sha256');
+  const walk = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap(d => (d.isDirectory() ? walk(join(dir, d.name)) : d.name.endsWith('.json') ? [join(dir, d.name)] : []));
+  for (const f of walk('scenarios').sort()) h.update(f).update(readFileSync(f));
+  return h.digest('hex').slice(0, 8);
+}
+
 export default defineConfig({
   base,
+  define: { __CONTENT_VERSION__: JSON.stringify(contentVersion()) },
   plugins: [
     react(),
     VitePWA({

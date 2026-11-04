@@ -33,6 +33,25 @@ describe('storage', () => {
     expect(d.bests['boys:shooter']?.sessionId).toBe('c');
   });
 
+  it('practice goes in history but never sets a best (D17)', () => {
+    const d = addSession(freshSave(), { ...session('p', 50), practice: true });
+    expect(d.sessions).toHaveLength(1);
+    expect(d.bests).toEqual({});
+  });
+
+  it('longer read windows keep their own best', () => {
+    let d = addSession(freshSave(), session('a', 10));
+    d = addSession(d, { ...session('b', 20), longerWindows: true });
+    expect(d.bests['boys:shooter']?.score).toBe(10);
+    expect(d.bests['boys:shooter:long']?.score).toBe(20);
+  });
+
+  it('old saves without longerWindows get the default', () => {
+    const s = freshSave();
+    const { longerWindows: _drop, ...oldSettings } = s.settings;
+    expect(parseSave(JSON.stringify({ ...s, settings: oldSettings })).settings.longerWindows).toBe(false);
+  });
+
   it('caps session history', () => {
     let d = freshSave();
     for (let i = 0; i < MAX_SESSIONS + 5; i++) d = addSession(d, session(`s${i}`, i));

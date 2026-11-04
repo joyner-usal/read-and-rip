@@ -36,6 +36,9 @@ jobs:
         env:
           # Project site lives at https://<owner>.github.io/<repo>/
           BASE_PATH: /${{ github.event.repository.name }}/
+          # Until launch the live site plays draft scenarios with a "Draft content"
+          # banner (BUILD.md D23). Remove this line once content is approved.
+          VITE_INCLUDE_DRAFTS: 'true'
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with:

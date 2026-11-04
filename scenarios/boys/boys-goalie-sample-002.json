@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "boys-goalie-sample-002",
+  "game": "boys",
+  "mode": "goalie",
+  "approachAngleDeg": -10,
+  "shooterHand": "right",
+  "cueType": "hands-high",
+  "fake": false,
+  "readWindowMs": 1800,
+  "bestZone": "top-left",
+  "goodZones": [
+    "top-center",
+    "mid-left"
+  ],
+  "difficulty": 1,
+  "rulesNote": "SAMPLE, needs coach review. Hands are up by the ear. Expect a high shot and keep your stick up.",
+  "status": "draft"
+}

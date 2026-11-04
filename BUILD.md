@@ -4,7 +4,40 @@ Last updated 2026-11-04. Product owner: Marty Joyner, Digital Learning and Educa
 
 ## Where things stand
 
-**Phase 0 (setup): done.**
+**Phase 1 (playable core): built, in review.** Phase 0 (setup) is merged and live.
+
+Phase 1 adds:
+
+- Game loop as a pure TypeScript state machine (`src/game/machine.ts`): set up, read,
+  feedback, summary, with pause. No React inside; driven by events with timestamps
+- Round clock that runs only in set up and read (`src/game/clock.ts`)
+- Scoring (`scoring.ts`) and ramp plus scenario picking (`ramp.ts`), mirroring
+  (`mirror.ts`), zone helpers and result words (`zones.ts`, `copy.ts`)
+- Scenario loader (`src/scenarios/loader.ts`): approved only in production, drafts in
+  dev or with `VITE_INCLUDE_DRAFTS=true` (D21), mirrors added, content hash stamped
+- Cue animation as data (`src/anim/cues.ts`): goalie rig (stance, crouch, stick), the
+  goalie closing a baited spot, shooter rig (stick load, pump fakes, release, ball
+  flight), still key frames for reduced motion
+- Canvas scene (`src/field/scene.ts`): per pack crease size, girls 8 meter arc with hash
+  marks, net depth, boys and girls stick heads. Placeholder art, drawn in code
+- Screens: start, game (HUD, field, feedback panel, pause), summary with reads to
+  review, settings (reduced motion, longer read windows, vibration), Practice mode
+- Keys 1 to 9, Space or Enter to continue, P or Escape to pause; leaving the tab pauses
+- Validator: bait and close fields, mirror side-word warnings, `-m` reserved
+- 14 more draft sample scenarios (18 in all, 36 with mirrors): every pack and mode
+  covers difficulty 1 to 5 and has a fake
+
+Checked: validator (18 valid, 0 warnings), typecheck, 114 unit tests, production build.
+Played at iPhone 13 size (390 x 664): full timed rounds to the summary, Practice, pause,
+a shooter bait rep, goalie mode with reduced motion, settings. No console errors, no
+scrolling on the game screen, every zone at least 67 x 71 px, result labels fit their
+cells. A build without drafts shows "No approved scenarios yet" (D21); the live site
+builds with drafts and a banner until launch (D23).
+
+Worth knowing: the clock stops during feedback, so a 30-second round takes about 60 to
+75 seconds of real time for a fast player.
+
+<details><summary>Phase 0 (setup), done</summary>
 
 - Vite + React + TypeScript, installable PWA (works offline after first load)
 - Canvas field view from behind the shooter's stick, with a 3x3 grid of real buttons
@@ -16,7 +49,7 @@ Last updated 2026-11-04. Product owner: Marty Joyner, Digital Learning and Educa
   an iPhone 13 sized screen: no console errors, no sideways scroll, service worker
   registers, settings persist.
 
-No gameplay yet: no clock, no scoring, no cue animation.
+</details>
 
 ## Decisions
 
@@ -28,52 +61,46 @@ No gameplay yet: no clock, no scoring, no cue animation.
 | D4 | Colors only in `brand/tokens.css`. Canvas reads them at draw time | Matches the no-hex rule. Exceptions: manifest colors, `theme-color` meta, icon SVG (can't read CSS) |
 | D5 | Fonts are self-hosted. No Google Fonts | Works offline; no third-party requests from a youth game |
 | D6 | Fields added to the schema: `schemaVersion`, `releaseMs`, `difficulty`, `status` | The ramp needs difficulty. The fake penalty needs to know when the real shot is released. Status keeps unreviewed content from shipping |
-| D7 | Fakes are goalie mode only in v1 | The -1 rule is written for goalies. See open question 3 |
+| D7 | ~~Fakes are goalie mode only in v1~~ Replaced by D15 | |
 | D8 | One storage key, versioned, with ids, owner and `syncedAt` on each record | Accounts can sync later without reshaping data |
 | D9 | No personal data, accounts or analytics in v1 | Simplest safe path for a youth audience |
 | D10 | Pull requests run checks only; `main` deploys | Nothing reaches the live site without passing checks |
 | D11 | The validator bans em dashes, en dashes and `--` in rules notes | Enforces the copy rule on content as it scales |
 | D12 | One 30-second clock per round; reps run back to back (Marty, 2026-11-04) | Keeps reads quick and the round short enough to replay |
 | D13 | GitHub Pages Source set to GitHub Actions (Marty, 2026-11-04) | `main` deploys through `.github/workflows/deploy.yml` |
+| D14 | Speed bonus +1 for a best or good tap in the first half of the read window (Marty, 2026-11-04) | Rewards quick, correct reads. Threshold and value get tuned after playtests |
+| D15 | Fakes in both modes (Marty, 2026-11-04). Shooter mode: goalie shows `baitZone` open, closes it at `closeMs`; tapping it is "Took the bait 0". Goalie mode keeps the -1 early tap. Fakes only at ramp level 3 and up | Both positions get fooled in real games; reading past a fake is the skill |
+| D16 | Scenarios mirror left to right unless `mirror: false` (Marty, 2026-11-04). Copies get `-m` and count in the pool. Validator warns on side words in mirrored rules notes | Doubles the pool and trains both sides. The warning catches notes that stop being true when flipped |
+| D17 | Practice mode in v1 (Marty, 2026-11-04): no clock, no ramp, windows doubled, rules note every rep, never a best | The main timing accommodation, and a place to learn without pressure |
+| D18 | Brand colors confirmed per HQ D73 (Marty, 2026-11-04): navy #001F58, red #FC222D | Closes the color question. Red stays limited to large text and accents for contrast |
+| D19 | Timed rounds show the rules note only in the summary, not after each rep (Claude default; confirmed by Marty, 2026-11-04) | A 1.2 s feedback beat is too short to read a note. Practice shows it every rep (D17) |
+| D20 | Practice draws from every difficulty, fakes included (Claude default; confirmed by Marty, 2026-11-04) | Practice has no ramp, so there is no level to gate fakes on |
+| D21 | Production builds load approved scenarios only. Dev, and any build with `VITE_INCLUDE_DRAFTS=true`, also load drafts and show a "Draft content" banner (Claude default; confirmed by Marty with D23, 2026-11-04) | Keeps unreviewed content off the live site while still allowing playtests |
+| D22 | Fonts are never committed (repo is public). `.gitignore` blocks font files in `brand/fonts/` (Marty, 2026-11-04) | License protection. Fallback fonts render until licensed hosting is sorted out |
+| D23 | Until launch, the live site plays draft scenarios with the "Draft content" banner (Marty, 2026-11-04). `deploy.yml` sets `VITE_INCLUDE_DRAFTS=true`; remove that line at launch | Lets Marty and reviewers playtest on phones before content is approved |
+| D24 | v1 ships with the fallback fonts; no brand font files are loaded (Marty, 2026-11-04) | Revisit once HQ confirms web rights and a hosting place for Vanguard CF and Mundial |
+| D25 | `rulesNote` is a plain coaching tip in peer-advice voice, not a rule citation (Marty, 2026-11-04) | Clear for kids and parents, and doesn't go stale when rulebooks change. The field keeps its name |
+| D26 | The name is "Read and Rip", written out with "and" (Marty, 2026-11-04) | Reads cleanly aloud and in search |
+| D27 | Stay on GitHub Pages through playtesting; pick a usalacrosse.com address closer to launch (Marty, 2026-11-04) | No setup needed now. A subdomain later needs one DNS record |
+| D28 | Marty reviews boys and girls scenarios and is the only one who sets `status` to `approved`, until dedicated reviewers are named (Marty, 2026-11-04) | One clear sign-off for v1 content |
 
 ## Open questions
 
-Each one has a recommendation. Answers go into `SPEC.md`.
-
-1. **Speed bonus:** +1 for a best or good tap in the first half of the read window?
-   *Recommend yes, as written.* Tune after playtests.
-2. **Fakes in shooter mode:** should the goalie ever bait the shooter (show an open spot,
-   then close it)? *Recommend no for v1.*
-3. **Brand colors:** this build uses navy #001F58, red #FC222D and off-white #FAF7F6 as
-   requested. LAXLEARN and the Parent Guide use navy #00205B and red #C8102E. Which set
-   is current? The red here fails contrast for small text, so it's limited to large
-   text and accents (see `SPEC.md` section 8).
-4. **Font license:** does the USA Lacrosse license for Vanguard CF and Mundial cover
-   self-hosted web use (WOFF2)?
-5. **Content review:** who signs off on boys and girls scenarios before `status` goes
-   to `approved`?
-6. **Rules notes:** should each note cite a rule (NFHS, USA Lacrosse youth rules), or
-   stay as plain coaching tips?
-7. **Mirroring:** can the game flip a scenario left to right (angle, hand and zones) to
-   double the pool? Only if the rules note doesn't depend on side.
-8. **Practice mode in v1?** *Recommend yes.* It's the main timing accommodation.
-9. **Hosting:** GitHub Pages on `joyner-usal`, or a usalacrosse.com subdomain later?
-    Pages on a private repo needs a paid GitHub plan.
-10. **Name styling:** "Read and Rip" or "Read & Rip"?
+None right now. New questions go here, one at a time.
 
 ## Next steps
 
-### Phase 1: playable core
+### Phase 1: playable core (built, see top)
 
-- Game state machine in plain TypeScript (start, set up, read, feedback, summary),
-  fully unit tested and kept apart from React
-- Round clock with pause; timing on `performance.now()` and `pointerdown`
-- Scoring and ramp modules with tests that cover every row in `SPEC.md` sections 4 and 5
-- Scenario loader: bundles approved scenarios only (drafts allowed in dev)
-- Cue animation on canvas: goalie rig (stick, weight, stance) and shooter rig (hands,
-  hips, shoulders, release), plus still key frames for reduced motion
-- Feedback overlay, round summary, settings screen, keyboard 1 to 9
-- Art pass on the field: crease, net depth, pack-specific markings
+Known limits to pick up in Phase 2:
+
+- The side-word warning can't tell "left" the direction from "left" the verb, so a
+  reviewer sometimes dismisses a false alarm
+- Field markings, crease sizes and stick heads are approximate art; check them against
+  the current rulebooks
+- No sound yet (the saved `sound` setting is unused)
+- Cue poses come from the best zone and cue type by rule. Real cues from coaches may
+  need hand-tuned poses per scenario
 
 ### Phase 2: content and playtest
 
@@ -90,9 +117,5 @@ Each one has a recommendation. Answers go into `SPEC.md`.
 
 See open questions above. Plus:
 
-- Access: the repo `joyner-usal/read-and-rip` must exist and the Claude GitHub App must
-  be allowed on it, so this work can be pushed
-- Font files (WOFF2) for Vanguard CF and Mundial, once the web license is confirmed
 - Approved USA Lacrosse logo files (SVG, light and dark backgrounds)
-- Names of scenario reviewers for boys and girls
 - Any source material for cues (coaching drills, goalie training guides)

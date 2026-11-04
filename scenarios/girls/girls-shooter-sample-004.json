@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "girls-shooter-sample-004",
+  "game": "girls",
+  "mode": "shooter",
+  "approachAngleDeg": 40,
+  "shooterHand": "left",
+  "cueType": "goalie-early-drop",
+  "fake": false,
+  "readWindowMs": 1600,
+  "bestZone": "top-right",
+  "goodZones": [
+    "top-center"
+  ],
+  "difficulty": 4,
+  "rulesNote": "SAMPLE, needs coach review. The goalie drops early to take away low. The top corner opens up.",
+  "status": "draft"
+}
