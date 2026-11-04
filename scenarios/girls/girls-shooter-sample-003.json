@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "girls-shooter-sample-003",
+  "game": "girls",
+  "mode": "shooter",
+  "approachAngleDeg": -20,
+  "shooterHand": "right",
+  "cueType": "goalie-weight-shift",
+  "fake": true,
+  "readWindowMs": 2200,
+  "baitZone": "mid-left",
+  "closeMs": 900,
+  "bestZone": "low-right",
+  "goodZones": [
+    "low-center"
+  ],
+  "difficulty": 3,
+  "rulesNote": "SAMPLE, needs coach review. The open spot was bait. The goalie steps into it, so finish where the goalie came from.",
+  "status": "draft"
+}

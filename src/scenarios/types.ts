@@ -51,8 +51,14 @@ export interface Scenario {
   fake: boolean;
   /** Time the cue plays and the tap is open, in ms. */
   readWindowMs: number;
-  /** For fakes only: ms into the window when the real shot is released. A goalie tap before this is an early tap. */
+  /** Goalie mode fakes only: ms into the window when the real shot is released. A tap before this is an early tap. */
   releaseMs?: number;
+  /** Shooter mode fakes only: the spot the goalie shows open before closing it. */
+  baitZone?: Zone;
+  /** Shooter mode fakes only: ms into the window when the goalie closes baitZone. */
+  closeMs?: number;
+  /** Left to right copy allowed. Missing means true (D16). */
+  mirror?: boolean;
   bestZone: Zone;
   goodZones: Zone[];
   /** 1 (easiest) to 5. Drives the difficulty ramp. */

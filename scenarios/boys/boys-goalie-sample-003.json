@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "boys-goalie-sample-003",
+  "game": "boys",
+  "mode": "goalie",
+  "approachAngleDeg": 25,
+  "shooterHand": "right",
+  "cueType": "release-sidearm",
+  "fake": false,
+  "readWindowMs": 1500,
+  "bestZone": "mid-right",
+  "goodZones": [
+    "low-right"
+  ],
+  "difficulty": 4,
+  "rulesNote": "SAMPLE, needs coach review. A sidearm release comes in flat. Step to the ball and keep your stick head level.",
+  "status": "draft"
+}

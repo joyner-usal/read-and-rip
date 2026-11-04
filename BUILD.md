@@ -4,7 +4,39 @@ Last updated 2026-11-04. Product owner: Marty Joyner, Digital Learning and Educa
 
 ## Where things stand
 
-**Phase 0 (setup): done.**
+**Phase 1 (playable core): built, in review.** Phase 0 (setup) is merged and live.
+
+Phase 1 adds:
+
+- Game loop as a pure TypeScript state machine (`src/game/machine.ts`): set up, read,
+  feedback, summary, with pause. No React inside; driven by events with timestamps
+- Round clock that runs only in set up and read (`src/game/clock.ts`)
+- Scoring (`scoring.ts`) and ramp plus scenario picking (`ramp.ts`), mirroring
+  (`mirror.ts`), zone helpers and result words (`zones.ts`, `copy.ts`)
+- Scenario loader (`src/scenarios/loader.ts`): approved only in production, drafts in
+  dev or with `VITE_INCLUDE_DRAFTS=true` (D21), mirrors added, content hash stamped
+- Cue animation as data (`src/anim/cues.ts`): goalie rig (stance, crouch, stick), the
+  goalie closing a baited spot, shooter rig (stick load, pump fakes, release, ball
+  flight), still key frames for reduced motion
+- Canvas scene (`src/field/scene.ts`): per pack crease size, girls 8 meter arc with hash
+  marks, net depth, boys and girls stick heads. Placeholder art, drawn in code
+- Screens: start, game (HUD, field, feedback panel, pause), summary with reads to
+  review, settings (reduced motion, longer read windows, vibration), Practice mode
+- Keys 1 to 9, Space or Enter to continue, P or Escape to pause; leaving the tab pauses
+- Validator: bait and close fields, mirror side-word warnings, `-m` reserved
+- 14 more draft sample scenarios (18 in all, 36 with mirrors): every pack and mode
+  covers difficulty 1 to 5 and has a fake
+
+Checked: validator (18 valid, 0 warnings), typecheck, 114 unit tests, production build.
+Played at iPhone 13 size (390 x 664): full timed rounds to the summary, Practice, pause,
+a shooter bait rep, goalie mode with reduced motion, settings. No console errors, no
+scrolling on the game screen, every zone at least 67 x 71 px, result labels fit their
+cells. The production build shows "No approved scenarios yet" (D21).
+
+Worth knowing: the clock stops during feedback, so a 30-second round takes about 60 to
+75 seconds of real time for a fast player.
+
+<details><summary>Phase 0 (setup), done</summary>
 
 - Vite + React + TypeScript, installable PWA (works offline after first load)
 - Canvas field view from behind the shooter's stick, with a 3x3 grid of real buttons
@@ -16,7 +48,7 @@ Last updated 2026-11-04. Product owner: Marty Joyner, Digital Learning and Educa
   an iPhone 13 sized screen: no console errors, no sideways scroll, service worker
   registers, settings persist.
 
-No gameplay yet: no clock, no scoring, no cue animation.
+</details>
 
 ## Decisions
 
@@ -64,17 +96,17 @@ Each one has a recommendation. Answers go into `SPEC.md`.
 
 ## Next steps
 
-### Phase 1: playable core
+### Phase 1: playable core (built, see top)
 
-- Game state machine in plain TypeScript (start, set up, read, feedback, summary),
-  fully unit tested and kept apart from React
-- Round clock with pause; timing on `performance.now()` and `pointerdown`
-- Scoring and ramp modules with tests that cover every row in `SPEC.md` sections 4 and 5
-- Scenario loader: bundles approved scenarios only (drafts allowed in dev)
-- Cue animation on canvas: goalie rig (stick, weight, stance) and shooter rig (hands,
-  hips, shoulders, release), plus still key frames for reduced motion
-- Feedback overlay, round summary, settings screen, keyboard 1 to 9
-- Art pass on the field: crease, net depth, pack-specific markings
+Known limits to pick up in Phase 2:
+
+- The side-word warning can't tell "left" the direction from "left" the verb, so a
+  reviewer sometimes dismisses a false alarm
+- Field markings, crease sizes and stick heads are approximate art; check them against
+  the current rulebooks
+- No sound yet (the saved `sound` setting is unused)
+- Cue poses come from the best zone and cue type by rule. Real cues from coaches may
+  need hand-tuned poses per scenario
 
 ### Phase 2: content and playtest
 
@@ -91,9 +123,7 @@ Each one has a recommendation. Answers go into `SPEC.md`.
 
 See open questions above. Plus:
 
-- Access: the repo `joyner-usal/read-and-rip` must exist and the Claude GitHub App must
-  be allowed on it, so this work can be pushed
-- Font files (WOFF2) for Vanguard CF and Mundial, once the web license is confirmed
+- A decision on font hosting (open question 1). Font files never go in this repo
 - Approved USA Lacrosse logo files (SVG, light and dark backgrounds)
 - Names of scenario reviewers for boys and girls
 - Any source material for cues (coaching drills, goalie training guides)

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "boys-shooter-sample-005",
+  "game": "boys",
+  "mode": "shooter",
+  "approachAngleDeg": 0,
+  "shooterHand": "right",
+  "cueType": "goalie-off-angle",
+  "fake": true,
+  "readWindowMs": 1800,
+  "baitZone": "top-left",
+  "closeMs": 700,
+  "bestZone": "low-center",
+  "goodZones": [
+    "low-left",
+    "low-right"
+  ],
+  "difficulty": 5,
+  "rulesNote": "SAMPLE, needs coach review. The goalie shows the top corner and then takes it away. Their feet stay high, so go low.",
+  "status": "draft"
+}

@@ -56,9 +56,14 @@
   --rr-goal-pipe: #F26A21;
   --rr-goal-net: #FFFFFF;
   --rr-goalie-fill: #3C4560;
+  --rr-goalie-stick: #C5C8D0;
   --rr-stick-shaft: #0A0F1C;
   --rr-stick-head: #FFFFFF;
   --rr-stick-mesh: #C5C8D0;
+  --rr-ball: #F4EFE2;
+  --rr-ball-edge: #0A0F1C;
+  --rr-shooter-jersey: var(--rr-navy);
+  --rr-net-back: rgb(255 255 255 / 0.10);
 
   /* Roles */
   --rr-bg: var(--rr-off-white);

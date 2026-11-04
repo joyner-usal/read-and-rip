@@ -1,6 +1,6 @@
 # Read and Rip: Game Spec
 
-Version 0.1, Phase 0 draft, 2026-11-04. Owner: USA Lacrosse, Digital Learning and Education.
+Version 0.2, Phase 1, 2026-11-04. Owner: USA Lacrosse, Digital Learning and Education.
 Anything marked **(open)** waits on a decision listed in `BUILD.md`.
 
 ## 1. The game in one line

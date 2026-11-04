@@ -1,6 +1,6 @@
 import {
   MAX_SESSIONS, STORAGE_KEY, STORAGE_VERSION,
-  type SaveData, type SessionRecord, type BestKey
+  bestKey, type SaveData, type SessionRecord
 } from './schema';
 
 function newId(): string {
@@ -12,7 +12,7 @@ export function freshSave(now = new Date()): SaveData {
   return {
     version: STORAGE_VERSION,
     profile: { localId: newId(), accountId: null, createdAt: now.toISOString() },
-    settings: { game: null, mode: 'shooter', reducedMotion: 'system', sound: true, haptics: true },
+    settings: { game: null, mode: 'shooter', reducedMotion: 'system', sound: true, haptics: true, longerWindows: false },
     sessions: [],
     bests: {}
   };
@@ -55,10 +55,14 @@ export function save(data: SaveData, storage: Storage | undefined = globalThis.l
   }
 }
 
-/** Adds a finished session, trims history, and updates the best score for that game and mode. */
+/**
+ * Adds a finished session, trims history, and updates the best for that game, mode and
+ * window setting. Practice never sets a best (D17).
+ */
 export function addSession(data: SaveData, session: SessionRecord): SaveData {
   const sessions = [session, ...data.sessions].slice(0, MAX_SESSIONS);
-  const key: BestKey = `${session.game}:${session.mode}`;
+  if (session.practice) return { ...data, sessions };
+  const key = bestKey(session.game, session.mode, session.longerWindows ?? false);
   const prev = data.bests[key];
   const bests = { ...data.bests };
   if (!prev || session.score > prev.score) {

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "boys-shooter-sample-002",
+  "game": "boys",
+  "mode": "shooter",
+  "approachAngleDeg": 15,
+  "shooterHand": "right",
+  "cueType": "goalie-stick-low",
+  "fake": false,
+  "readWindowMs": 2000,
+  "bestZone": "top-center",
+  "goodZones": [
+    "top-left",
+    "top-right"
+  ],
+  "difficulty": 2,
+  "rulesNote": "SAMPLE, needs coach review. The goalie's stick is down. Change levels and go high.",
+  "status": "draft"
+}

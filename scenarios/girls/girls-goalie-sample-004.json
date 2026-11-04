@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "girls-goalie-sample-004",
+  "game": "girls",
+  "mode": "goalie",
+  "approachAngleDeg": -35,
+  "shooterHand": "left",
+  "cueType": "head-fake",
+  "fake": true,
+  "readWindowMs": 1700,
+  "releaseMs": 1000,
+  "bestZone": "top-right",
+  "goodZones": [
+    "top-center"
+  ],
+  "difficulty": 5,
+  "rulesNote": "SAMPLE, needs coach review. The head fake is there to move you. Watch the stick head, not the eyes.",
+  "status": "draft"
+}
