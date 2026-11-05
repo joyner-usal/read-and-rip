@@ -32,7 +32,7 @@ export function bestLine(best: Zone, mode: Mode): string {
   return `Best spot: ${zoneForMode(best, mode)}`;
 }
 
-// ---- Feedback card (Phase 1.5, style frame). Proposed wording, pending Marty (BUILD.md). ----
+// ---- Feedback card (Phase 1.5, style frame). Wording approved in BUILD.md D36. ----
 
 const CARD_WORD: Record<Mode, Record<Outcome, string>> = {
   shooter: { best: 'Goal', good: 'Goal', miss: 'Wide', timeout: 'Too late', early: 'Too early', bait: 'Took the bait' },

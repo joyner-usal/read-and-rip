@@ -71,7 +71,7 @@ Start screen  ->  Round (30 s clock)  ->  Round summary  ->  Play again / Change
    zone outlines with YOU and BEST tags appear on the goal. In a timed round it lasts
    about 1.2 s with an auto-advance bar and no Next button (Space or Enter skips); the
    clock is stopped. In Practice mode it waits for Next and the line is the `rulesNote`.
-   (Advance behavior: D35. Card wording proposed in D36, pending Marty.)
+   (Advance behavior: D35. Card wording: D36.)
 
 Scenarios don't repeat inside a round until the eligible pool runs out. Mirrored copies
 (section 6) count as their own scenarios.
@@ -273,7 +273,7 @@ Target: WCAG 2.2 AA where it applies to a timed game.
 ### Feedback never by color alone
 
 Every result has a word, an icon shape, the points as text, and scoring chips in words
-(card wording proposed in D36, pending Marty):
+(card wording: D36):
 
 | Result | Icon | Shooter word | Goalie word | Chips |
 | --- | --- | --- | --- | --- |
