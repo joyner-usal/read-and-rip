@@ -136,14 +136,11 @@ Worth knowing: the clock stops during feedback, so a 30-second round takes about
 | D35 | Timed rounds auto-advance after feedback with no Next button (Space or Enter still skips); Practice shows Next and never auto-advances (Marty, 2026-11-05) | Keeps timed rounds flowing; Practice is for reading the note |
 | D36 | Card wording from the style frame: "Goal", "Save", "Wide", "Scored on", "Too late", "Bit on the fake", "Took the bait"; chips such as "Best spot +3" and "Fast read +1"; timed rounds show the best spot line, Practice the coaching note (Marty, 2026-11-05) | Matches the approved style frame while keeping every point in words |
 | D37 | One opaque canvas plus adaptive resolution: density capped at 2, stepping to 1.5 then 1 if frames average slower than about 55 fps (Claude, 2026-11-05) | Measured: two stacked full-screen canvases ran 28 fps at 4x throttle; one canvas at 1x density runs 58 |
+| D38 | Short screens crop up to 160 px of sky off the top before the scene shrinks; the bottom stays anchored and wider screens still letterbox (Marty, 2026-11-05) | Keeps goal zones at 51 to 55 px in a phone browser with toolbars (they were 43 px), above the 48 px minimum |
 
 ## Open questions
 
-1. **Short browser viewports:** the frame scales down to fit, so in a phone browser with
-   its toolbars showing (about 390 x 664) each zone shrinks to 43 px, under our 48 px
-   minimum. *Recommend* letting short screens crop up to about 160 px of sky instead of
-   shrinking, which keeps zones at 55 px. Installed (home screen) play is full height
-   and unaffected.
+None right now. New questions go here, one at a time.
 
 ## Open items (art)
 
@@ -184,7 +181,7 @@ Known limits to pick up in Phase 2:
 
 ## Needed from Marty
 
-See open questions and open items above, and D33 to D36. Plus:
+See the open items above. Plus:
 
 - Approved USA Lacrosse logo files (SVG, light and dark backgrounds)
 - Any source material for cues (coaching drills, goalie training guides)

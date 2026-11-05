@@ -296,8 +296,8 @@ Every result has a word, an icon shape, the points as text, and scoring chips in
   keyboard focus still draws a visible outline.
 - Keys 1 to 9 pick zones in reading order. Space or Enter starts and continues.
 - Tap targets are at least 48 by 48 px (`--rr-tap-min`). On the sprite field each zone
-  is 55 x 55 px in the 390 x 844 frame; a short browser viewport scales the frame down
-  (43 px at 390 x 664). See BUILD.md open question 1.
+  is 55 x 55 px in the 390 x 844 frame, and 51 to 53 px in a phone browser with its
+  toolbars showing, because short screens crop sky before shrinking (D38).
 - Results are announced in a polite live region. The clock is announced at 10 and 5
   seconds only, not every second.
 - Works in portrait and landscape. Text scales with browser zoom up to 200%.
@@ -342,6 +342,8 @@ everyone a way in:
 
 Reference frame 390 x 844, scaled uniformly to the viewport (letterboxed on wider
 screens; the background extends past the frame so the sides fill with field, not bars).
+Short screens crop up to 160 px of sky off the top before the scene shrinks, with the
+bottom anchored (D38).
 Built by `scripts/build-sprites.py` into `public/sprites/boys/` and
 `src/art/boys-sprites.json`.
 

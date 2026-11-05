@@ -28,6 +28,17 @@ describe('layout', () => {
     expect(f.scale).toBe(1);
     expect(f.x).toBe(305);
     expect(toFrame(f, 305 + 195, 422)).toEqual({ x: 195, y: 422 });
+    expect(fitFrame(820, 1180).scale).toBeCloseTo(1180 / 844); // tablet: contain, as before
+  });
+  it('short phone screens crop sky instead of shrinking the zones (D38)', () => {
+    const f = fitFrame(390, 664); // phone browser with toolbars
+    expect(f.scale).toBeCloseTo(664 / 684);
+    expect(f.y + 844 * f.scale).toBeCloseTo(664); // bottom stays anchored
+    expect((MOUTH.w * f.scale) / 3).toBeGreaterThan(48);
+    expect(f.y + MOUTH.y * f.scale).toBeGreaterThan(130); // goal sits below the HUD and pill
+    const g = fitFrame(390, 750); // a little short: crop only, no shrink
+    expect(g.scale).toBe(1);
+    expect(g.y).toBe(750 - 844);
   });
 });
 

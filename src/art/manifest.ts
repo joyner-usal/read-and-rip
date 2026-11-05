@@ -44,10 +44,20 @@ export function placeSprite(name: SpriteName, ax: number, ay: number): Rect {
 
 export interface Fit { scale: number; x: number; y: number }
 
-/** Uniform scale of the reference frame into a viewport, centered (letterboxed). */
+/** Sky a short screen may lose from the top before the scene shrinks (D38). */
+export const MAX_SKY_CROP = 160;
+
+/**
+ * Uniform scale of the reference frame into a viewport. Wider screens letterbox
+ * (centered). Short screens first crop up to MAX_SKY_CROP of sky off the top, keeping
+ * the bottom anchored, so the goal zones stay full size in a phone browser (D38).
+ */
 export function fitFrame(width: number, height: number): Fit {
-  const scale = Math.min(width / FRAME.w, height / FRAME.h);
-  return { scale, x: (width - FRAME.w * scale) / 2, y: (height - FRAME.h * scale) / 2 };
+  const contain = Math.min(width / FRAME.w, height / FRAME.h);
+  const cropped = Math.min(width / FRAME.w, height / (FRAME.h - MAX_SKY_CROP));
+  const scale = Math.min(cropped, Math.max(1, contain));
+  const frameH = FRAME.h * scale;
+  return { scale, x: (width - FRAME.w * scale) / 2, y: frameH > height ? height - frameH : (height - frameH) / 2 };
 }
 
 export const toScreen = (f: Fit, r: Rect): Rect => ({ x: f.x + r.x * f.scale, y: f.y + r.y * f.scale, w: r.w * f.scale, h: r.h * f.scale });
