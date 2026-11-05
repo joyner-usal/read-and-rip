@@ -184,7 +184,7 @@ Worth knowing: the clock stops during feedback, so a 30-second round takes about
 | D39 | The card waits for the shot: it appears 250 ms after contact, and timed feedback runs 1.2 s from then; Next or Space can't skip the shot (Marty's Phase 1.6 brief; the 1.2 s dwell from the reveal confirmed by Marty, 2026-11-05) | The player always sees the shot land, and still gets the full time to read the card |
 | D40 | Shooter mode: your tap starts the 120 ms load, so the ball leaves 120 ms after the tap. Goalie mode: a tap before a real release makes the shooter let it go 120 ms later (fakes still release on time) (Claude default; confirmed by Marty, 2026-11-05) | The load has to happen before the release; scoring timing is unchanged |
 | D41 | Reduced motion: the opponent goalie's reaction lands on the contact still frame, so the shot is exactly three stills; the result is announced to screen readers when the card appears; the vibration still fires at the tap (Claude, 2026-11-05) | Keeps reduced motion to three frames; announcements match what is on screen; the buzz confirms the tap |
-| D42 | Wide shots from the middle row clip the pipe (within 4 px) for the post ping; other wide shots pass 20 px clear (Claude, 2026-11-05; confirm) | Gives the ping a predictable home without changing any result |
+| D42 | Wide shots from the middle row clip the pipe (within 4 px) for the post ping; other wide shots pass 20 px clear (Claude default; confirmed by Marty, 2026-11-05) | Gives the ping a predictable home without changing any result |
 
 ## Open questions
 
