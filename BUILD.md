@@ -4,8 +4,50 @@ Last updated 2026-11-05. Product owner: Marty Joyner, Digital Learning and Educa
 
 ## Where things stand
 
-**Phase 1.5 (art and feel, boys): built, in review.** Phase 1 and Phase 0 are merged
-and live.
+**Phase 1.6 (motion pass, boys): built, in review.** Phases 0, 1 and 1.5 are merged
+and live. No new art, no rule or scoring changes.
+
+Phase 1.6 makes every rep show the shooter shoot, the ball fly and the goalie move:
+
+- One timing module, `src/game/timing.ts`: load 120 ms, release hold 160 ms, flight
+  600 ms (eased, last 20% at half speed), 70 ms contact freeze, card 250 ms after
+  contact sliding up over 200 ms, goalie reaction 120 ms (plus 180 ms when beaten),
+  goalie dip 60 ms and travel 300 ms, lean 0.18 rad, stretch 1.08, smear 34 ms at 25%,
+  push-in 3%, shakes, net bulge 40 px for 650 ms, tap flash 150 ms
+- The sequence is enforced in the engine: each result stores `revealAt` (the card
+  time); timed feedback runs 1.2 s from the reveal, and Next or Space can't skip the
+  shot. Scoring is still decided at the tap
+- Motion model `src/art/motion.ts` (pure): goalie travel with dip, lean, stretch, a
+  hard sprite swap at mid-move and one smear frame; the opponent's reaction delay; the
+  shooter's load, lunge and follow with hard swaps; camera push-in and shake
+- Ball `src/art/ball.ts`: radius 10 to 5 with a 1.5 px outline, 6-point trail, ground
+  shadow, slow-motion finish, contact freeze; goal, save (spin trail) and wide (bounce,
+  roll, post ping) endings
+- Renderer: no crossfades; camera applied to the cached static layer, the dynamic
+  layer and the tap grid together; tap ripple plus zone flash
+- Reduced motion: three still frames (release, mid-flight, contact) 250 ms apart, then
+  the card; no shake, push-in, smear or slow motion
+
+Checked: validator, typecheck, 181 unit tests (the sequence order, the reveal gate and
+the reaction delay included), production build. Frame strips on a virtual clock, every
+40 ms from tap to card at 390 x 844: shooter goal, wide and save (too late); goalie
+save, goal against, and a bitten fake (goalie mode has no wide, D34). Reduced motion
+strip: the field changes only at release, mid-flight, contact and card. The goal mouth
+measures 165 x 164.5 px at 390 x 844, so zones are 55 px (no fit change needed). No
+console errors.
+
+| Mode | CPU 1x | CPU 4x throttle |
+| --- | --- | --- |
+| Shooter | 60.0 fps, p95 16.7 ms (2x density) | 59.8 fps, p95 16.7 ms (settled at 1x) |
+| Goalie | 60.0 fps, p95 16.7 ms (2x density) | 57.1 fps, p95 16.8 ms (settled at 1x) |
+
+Worth knowing: each rep now takes about 1 s from tap to card (120 load + 600 flight +
+250 hold) plus the 1.2 s card, and the clock is stopped for all of it, so a 30-second
+round runs longer in real time than before.
+
+<details><summary>Phase 1.5 (art and feel, boys), merged</summary>
+
+**Phase 1.5 (art and feel, boys): merged.**
 
 Phase 1.5 adds (gameplay rules and scoring unchanged):
 
@@ -44,6 +86,8 @@ Chromium, production build, 2x density, in-page autoplay, steady state after war
 This machine has no GPU, so the browser rasterizes in software and the 4x throttle slows
 that too; a CPU profile put 91% of frame time in browser raster and compositing and
 about 5% in game code. Real phones composite on the GPU, so treat these as a worst case.
+
+</details>
 
 <details><summary>Phase 1 (playable core), merged</summary>
 
@@ -137,6 +181,10 @@ Worth knowing: the clock stops during feedback, so a 30-second round takes about
 | D36 | Card wording from the style frame: "Goal", "Save", "Wide", "Scored on", "Too late", "Bit on the fake", "Took the bait"; chips such as "Best spot +3" and "Fast read +1"; timed rounds show the best spot line, Practice the coaching note (Marty, 2026-11-05) | Matches the approved style frame while keeping every point in words |
 | D37 | One opaque canvas plus adaptive resolution: density capped at 2, stepping to 1.5 then 1 if frames average slower than about 55 fps (Claude, 2026-11-05) | Measured: two stacked full-screen canvases ran 28 fps at 4x throttle; one canvas at 1x density runs 58 |
 | D38 | Short screens crop up to 160 px of sky off the top before the scene shrinks; the bottom stays anchored and wider screens still letterbox (Marty, 2026-11-05) | Keeps goal zones at 51 to 55 px in a phone browser with toolbars (they were 43 px), above the 48 px minimum |
+| D39 | The card waits for the shot: it appears 250 ms after contact, and timed feedback runs 1.2 s from then; Next or Space can't skip the shot (Marty's Phase 1.6 brief; the 1.2 s dwell from the reveal confirmed by Marty, 2026-11-05) | The player always sees the shot land, and still gets the full time to read the card |
+| D40 | Shooter mode: your tap starts the 120 ms load, so the ball leaves 120 ms after the tap. Goalie mode: a tap before a real release makes the shooter let it go 120 ms later (fakes still release on time) (Claude default; confirmed by Marty, 2026-11-05) | The load has to happen before the release; scoring timing is unchanged |
+| D41 | Reduced motion: the opponent goalie's reaction lands on the contact still frame, so the shot is exactly three stills; the result is announced to screen readers when the card appears; the vibration still fires at the tap (Claude, 2026-11-05) | Keeps reduced motion to three frames; announcements match what is on screen; the buzz confirms the tap |
+| D42 | Wide shots from the middle row clip the pipe (within 4 px) for the post ping; other wide shots pass 20 px clear (Claude default; confirmed by Marty, 2026-11-05) | Gives the ping a predictable home without changing any result |
 
 ## Open questions
 

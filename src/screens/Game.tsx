@@ -107,10 +107,13 @@ function legacyScene(s: GameState, now: number, reduced: boolean): SceneInput | 
 
 export function Game({ config, pool, reducedMotion, haptics, sprites, onDone }: Props) {
   const stateRef = useRef<GameState | null>(null);
-  if (stateRef.current === null) stateRef.current = createGame(config, pool, randomSeed(), performance.now());
+  if (stateRef.current === null) stateRef.current = createGame({ ...config, reducedMotion }, pool, randomSeed(), performance.now());
   const [state, setState] = useState<GameState>(stateRef.current);
   const [clock, setClock] = useState(clockText(config.roundMs));
   const [announce, setAnnounce] = useState('');
+  /** The card waits for the shot: it shows once the ball has landed (machine `last.revealAt`). */
+  const [cardUp, setCardUp] = useState(false);
+  const cardRef = useRef(false);
   const secRef = useRef<number | null>(null);
   const doneSent = useRef(false);
   const nextRef = useRef<HTMLButtonElement>(null);
@@ -142,10 +145,8 @@ export function Game({ config, pool, reducedMotion, haptics, sprites, onDone }: 
   useEffect(() => {
     if (state.reps.length > lastReps.current && state.last) {
       lastReps.current = state.reps.length;
-      const r = state.last.record;
-      const chips = cardChips(r.outcome, r.speedBonus).join(', ');
-      setAnnounce(`${cardWord(r.outcome, config.mode)}, ${cardPoints(r.points)}. ${chips}. ${bestLine(state.last.scenario.bestZone, config.mode)}.`);
-      if (haptics) vibrate(isScoring(r.outcome) ? 25 : 70);
+      // A buzz confirms the tap right away; the result itself waits for the card.
+      if (haptics) vibrate(isScoring(state.last.record.outcome) ? 25 : 70);
     }
     if (state.phase === 'summary' && !doneSent.current) {
       doneSent.current = true;
@@ -178,6 +179,17 @@ export function Game({ config, pool, reducedMotion, haptics, sprites, onDone }: 
         const t = s.rep && s.phase === 'reading' ? Math.min(1, (readElapsedMs(s, now) ?? 0) / s.rep.timing.windowMs) : s.phase === 'feedback' ? 1 : 0;
         readBar.current.style.transform = `scaleX(${t})`;
       }
+      // Reveal the card once the shot has landed, and announce the result then.
+      const up = s.phase === 'feedback' && !!s.last && gameNow(s, now) >= s.last.revealAt;
+      if (up !== cardRef.current) {
+        cardRef.current = up;
+        setCardUp(up);
+        if (up && s.last) {
+          const r = s.last.record;
+          const chips = cardChips(r.outcome, r.speedBonus).join(', ');
+          setAnnounce(`${cardWord(r.outcome, s.config.mode)}, ${cardPoints(r.points)}. ${chips}. ${bestLine(s.last.scenario.bestZone, s.config.mode)}.`);
+        }
+      }
       if (advanceBar.current && s.phase === 'feedback' && s.feedbackEndsAt !== null) {
         const k = 1 - (s.feedbackEndsAt - gameNow(s, now)) / s.config.feedbackMs;
         advanceBar.current.style.transform = `scaleX(${Math.max(0, Math.min(1, k))})`;
@@ -200,7 +212,7 @@ export function Game({ config, pool, reducedMotion, haptics, sprites, onDone }: 
       const z = zoneFromKey(e.key);
       if (z && !s.paused) {
         e.preventDefault();
-        if (s.phase === 'reading') renderer.rippleZone(z, e.timeStamp);
+        if (s.phase === 'reading') renderer.tap(z, e.timeStamp);
         tap(z, e.timeStamp);
       } else if ((e.key === 'p' || e.key === 'P' || e.key === 'Escape') && s.phase !== 'summary') {
         e.preventDefault();
@@ -225,7 +237,7 @@ export function Game({ config, pool, reducedMotion, haptics, sprites, onDone }: 
   }, [pause]);
 
   const last = state.last;
-  const inFeedback = state.phase === 'feedback' && last;
+  const inFeedback = state.phase === 'feedback' && last && cardUp;
   const marks: Partial<Record<Zone, Mark[]>> = {};
   const add = (z: Zone, m: Mark) => (marks[z] = [...(marks[z] ?? []), m]);
   if (inFeedback) {
@@ -287,7 +299,7 @@ export function Game({ config, pool, reducedMotion, haptics, sprites, onDone }: 
       </div>
       <div className="readbar" aria-hidden="true"><div className="readbar__fill" ref={readBar} /></div>
 
-      {!state.paused && !inFeedback && (
+      {!state.paused && state.phase !== 'feedback' && (
         <div className="pill-row"><p className="pill">{prompt}</p></div>
       )}
 

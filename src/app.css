@@ -111,6 +111,8 @@ button { font: inherit; }
 .stage { position: absolute; inset: 0; overflow: hidden; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
 .stage__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .stage__cover { position: absolute; inset: 0; background: var(--rr-navy); }
+.stage__cam { position: absolute; inset: 0; transform-origin: 0 0; pointer-events: none; }
+.stage__cam .grid { pointer-events: auto; }
 .stage__fps {
   position: absolute; right: 6px; bottom: 6px; padding: 2px 6px; font: 600 11px/1.2 ui-monospace, monospace;
   background: var(--rr-black); color: var(--rr-white); opacity: 0.7; pointer-events: none;
@@ -179,10 +181,10 @@ button { font: inherit; }
   display: flex; flex-direction: column; gap: 10px;
   padding: 18px 18px 16px; border-radius: 18px; background: var(--rr-white); color: var(--rr-navy);
   box-shadow: 0 10px 30px var(--rr-card-shadow);
-  /* Waits for the shot to land so the ball isn't hidden behind the card. */
-  animation: card-in var(--rr-dur-med) var(--rr-ease) var(--rr-card-delay) both;
+  /* Mounts once the shot has landed (machine revealAt), then slides up over 200 ms. */
+  animation: card-in var(--rr-card-slide) var(--rr-ease) both;
 }
-@keyframes card-in { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes card-in { from { transform: translateY(48px); opacity: 0; } to { transform: none; opacity: 1; } }
 .card__head { display: flex; align-items: center; gap: 12px; }
 .card__icon { width: 40px; height: 40px; border-radius: 20px; background: var(--rr-navy); color: var(--rr-white); display: grid; place-items: center; flex: none; }
 .card__icon .result-icon { color: var(--rr-white); }
@@ -196,7 +198,7 @@ button { font: inherit; }
 .card__advance { height: 4px; border-radius: 2px; background: var(--rr-card-track); overflow: hidden; }
 .card__advance-fill { height: 100%; background: var(--rr-navy); transform: scaleX(0); transform-origin: left center; }
 .card__next { align-self: stretch; min-height: 48px; border-radius: 12px; }
-.card--paused { animation-delay: 0ms; }
+.card--paused { animation: none; }
 .card--paused .row { margin-top: 4px; }
 .card--paused .cta, .card--paused .btn { border-radius: 12px; min-height: 48px; }
 

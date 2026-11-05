@@ -48,6 +48,7 @@ export function Stage({ renderer, onFrame, onTap, disabled, marks, hidden, descr
   const wrap = useRef<HTMLDivElement>(null);
   const cv = useRef<HTMLCanvasElement>(null);
   const fpsRef = useRef<HTMLSpanElement>(null);
+  const camRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef(onFrame);
   frameRef.current = onFrame;
   const [mouth, setMouth] = useState<Rect | null>(null);
@@ -100,10 +101,15 @@ export function Stage({ renderer, onFrame, onTap, disabled, marks, hidden, descr
       }
       frameRef.current?.(now);
       if (size.w > 0) {
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.drawImage(sc, 0, 0);
-        ctx.setTransform(size.dpr, 0, 0, size.dpr, 0, 0);
+        // One camera transform for the cached static layer, the dynamic layer and the grid.
+        const cam = renderer.camera(size.w, size.h, now);
+        const d = size.dpr;
+        ctx.setTransform(d * cam.s, 0, 0, d * cam.s, d * cam.tx, d * cam.ty);
+        ctx.drawImage(sc, 0, 0, size.w, size.h);
         renderer.draw(ctx, size.w, size.h, now);
+        if (camRef.current) {
+          camRef.current.style.transform = cam.s === 1 && cam.tx === 0 && cam.ty === 0 ? '' : `matrix(${cam.s},0,0,${cam.s},${cam.tx},${cam.ty})`;
+        }
         const m = renderer.mouth(size.w, size.h);
         const key = `${m.x.toFixed(1)},${m.y.toFixed(1)},${m.w.toFixed(1)},${m.h.toFixed(1)}`;
         if (key !== lastMouth) {
@@ -138,6 +144,7 @@ export function Stage({ renderer, onFrame, onTap, disabled, marks, hidden, descr
       <canvas ref={cv} className="stage__canvas" aria-hidden="true" />
       {hidden && <div className="stage__cover" aria-hidden="true" />}
       {mouth && !hidden && (
+        <div className="stage__cam" ref={camRef}>
         <div
           className={`grid${showMarks ? ' grid--marks' : ''}`}
           role="group"
@@ -159,7 +166,7 @@ export function Stage({ renderer, onFrame, onTap, disabled, marks, hidden, descr
                   if (disabled || e.button !== 0) return;
                   pointerTapped.current = true;
                   const r = wrap.current!.getBoundingClientRect();
-                  renderer.ripple(e.clientX - r.left, e.clientY - r.top, e.timeStamp);
+                  renderer.tap(z, e.timeStamp, { x: e.clientX - r.left, y: e.clientY - r.top });
                   onTap?.(z, e.timeStamp);
                 }}
                 onClick={e => {
@@ -169,7 +176,7 @@ export function Stage({ renderer, onFrame, onTap, disabled, marks, hidden, descr
                   }
                   if (!disabled && e.detail === 0) {
                     const now = performance.now();
-                    renderer.rippleZone(z, now);
+                    renderer.tap(z, now);
                     onTap?.(z, now);
                   }
                 }}
@@ -184,6 +191,7 @@ export function Stage({ renderer, onFrame, onTap, disabled, marks, hidden, descr
               </button>
             );
           })}
+        </div>
         </div>
       )}
       {import.meta.env.DEV && <span className="stage__fps" ref={fpsRef} aria-hidden="true" />}

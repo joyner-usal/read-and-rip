@@ -1,6 +1,6 @@
 # Read and Rip: Game Spec
 
-Version 0.3, Phase 1.5 (art and feel, boys), 2026-11-05. Owner: USA Lacrosse, Digital Learning and Education.
+Version 0.4, Phase 1.6 (motion pass, boys), 2026-11-05. Owner: USA Lacrosse, Digital Learning and Education.
 Anything marked **(open)** waits on a decision listed in `BUILD.md`.
 
 ## 1. The game in one line
@@ -66,12 +66,15 @@ Start screen  ->  Round (30 s clock)  ->  Round summary  ->  Play again / Change
    The first tap locks in the answer. One tap per rep.
 3. **Resolve:** best, good, miss, timeout (no tap), early (goalie fake) or took the
    bait (shooter fake).
-4. **Feedback:** the ball's result plays out on the field (section 10), then a compact
-   card shows the result word, points, scoring chips and one coaching line, and the
-   zone outlines with YOU and BEST tags appear on the goal. In a timed round it lasts
-   about 1.2 s with an auto-advance bar and no Next button (Space or Enter skips); the
-   clock is stopped. In Practice mode it waits for Next and the line is the `rulesNote`.
-   (Advance behavior: D35. Card wording: D36.)
+4. **Feedback:** scoring is decided at the tap, but the reveal waits. The shot plays
+   out on the field first (section 10): the shooter loads and releases, the ball flies
+   and lands, a short hold, and only then a compact card slides up (250 ms after
+   contact, over 200 ms) with the result word, points, scoring chips and one coaching
+   line, while the zone outlines with YOU and BEST tags appear on the goal. In a timed
+   round the card stays about 1.2 s from when it appears, with an auto-advance bar and
+   no Next button (Space or Enter skips, but only once the card is up); the clock is
+   stopped from the tap until the next rep. In Practice mode it waits for Next and the
+   line is the `rulesNote`. (Advance behavior: D35. Card wording: D36. Reveal: D39.)
 
 Scenarios don't repeat inside a round until the eligible pool runs out. Mirrored copies
 (section 6) count as their own scenarios.
@@ -264,10 +267,11 @@ Target: WCAG 2.2 AA where it applies to a timed game.
 ### Motion
 
 - Respects `prefers-reduced-motion`. An in-app setting overrides it (System, On, Off).
-- With reduced motion on: poses and the ball show as still key frames (no crossfades,
-  no idle bob, no motion trail, no press ripple, no net ripple, no impact burst), and
-  the card appears without sliding. Duration tokens drop to 0 ms. The read-window bar
-  still fills, because it is a progress indicator.
+- With reduced motion on: the shot shows as three still frames (release, mid-flight,
+  contact) 250 ms apart, then the card. No travel, smear, idle bob, motion trail, slow
+  motion, camera push-in or shake, press ripple, net ripple or impact burst, and the
+  card appears without sliding. Duration tokens drop to 0 ms. The read-window bar still
+  fills, because it is a progress indicator.
 - Nothing flashes more than 3 times a second, in any setting.
 
 ### Feedback never by color alone
@@ -361,22 +365,39 @@ Draw order: background, goal, goalie shadow, goalie, ball, shooter, UI.
 mode: you are navy number 30; the shooter is gray number 12. Until the navy goalie poses
 arrive, goalie mode uses the gray goalie poses plus the navy screen-left dive (D32).
 
-**Poses.** Shooter: carry in set up, cocked through the read, release on tap or timeout
-(goalie mode: at the release point), then follow. The ball is in the pocket through
-cocked. Goalie (shooter mode): ready, then a cue pose that leaves the open zone open
-(fakes show the bait open, then close it at `closeMs`). Goalie (goalie mode): ready,
-then the save pose for the tapped zone: the dive for top screen-left, the high
-screen-right pose plus a lunge for top screen-right, low poses for the bottom row.
+**Poses.** Shooter: carry in set up, cocked through the read. Shooter mode: your tap
+starts a 120 ms load (the stick draws back 0.06 rad, the body rises 4 px), then the
+ball leaves. Goalie mode: the shooter loads into the cue's release point (a tap before a
+real release makes him let it go right away). At release: a hard swap to the release
+pose with a forward lunge (8 px up and toward the goal, scale 1.03), held 160 ms, then
+follow. The ball is in the pocket through cocked. Goalie (shooter mode): ready, then a
+cue pose that leaves the open zone open (fakes show the bait open, then close it at
+`closeMs`), then a reaction 120 ms after release. On a goal he is 180 ms later still
+and reaches toward the ball as it goes in; on a wide shot he reaches partway. Goalie
+(goalie mode): moves the instant you tap. Save poses: the dive for top screen-left, the
+high screen-right pose plus a lunge for top screen-right, low poses for the bottom row.
 
-**Results on the field.** Goal: the ball lands in the net, which bulges and ripples.
-Save: the ball deflects off the goalie's stick head with a small burst. Wide: the ball
-skips on the turf past a pipe (or over the crossbar). Shooter mode: best or good is a
+**Ball.** Radius 10 at the stick to 5 at the goal, white with a dark 1.5 px outline, a
+6-point trail, and a shadow on the turf straight below it that shrinks and fades as the
+ball rises. Flight is about 600 ms: slow out of the stick, fast through the middle, the
+last 20% at half speed, then a 70 ms freeze frame on contact.
+
+**Results on the field.** Goal: the ball lands in the net, which bulges (radius 40,
+650 ms) and ripples, with a 4 px camera shake for 120 ms. Save: an impact burst off the
+stick head, the ball deflects with a spinning trail, 3 px shake. Wide: the ball sails
+past the pipe (or over the crossbar), takes one bounce and rolls toward the fence; a
+middle-row miss clips the pipe for a small post ping. Goalie mode has no wide (D34). Shooter mode: best or good is a
 goal, a miss goes wide, the bait and a timeout are saved. Goalie mode: best or good is
 a save, anything else is a goal against.
 
-**Feel.** Pose swaps crossfade (about 90 ms) with an eased move and scale and a slight
-overshoot; a new rep eases in over about 250 ms. Both players breathe with a small idle
-bob. The tap grid is invisible during play.
+**Feel.** No crossfades. The goalie travels: a 60 ms dip, then an eased 300 ms path to
+the save spot, leaning toward the zone (up to 0.18 rad) and stretching to 1.08 at full
+reach. Sprites swap hard at the middle of a move (the shooter at release and follow),
+with one 25% smear copy for about 2 frames. A new rep eases in over 250 ms. Both players
+breathe with a small idle bob. The camera pushes 3% toward the goal through the read
+and eases back out over the flight; it moves the cached static layer, the players and
+the tap grid together. The tap grid is invisible during play; a tap shows a press
+ripple and a 150 ms outline on the tapped zone.
 
 **Performance.** Background and goal are painted once per size into an offscreen canvas
 and copied into one opaque on-screen canvas each frame, under the players, ball and

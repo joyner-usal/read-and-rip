@@ -10,6 +10,7 @@ import {
   type Level, type RampState, type Timing
 } from './ramp';
 import { addToRound, scoreRep, type Outcome } from './scoring';
+import { shotSchedule } from './timing';
 
 export interface GameConfig {
   game: Game;
@@ -18,7 +19,10 @@ export interface GameConfig {
   longerWindows: boolean;
   roundMs: number;
   setupMs: number;
+  /** How long the feedback card stays up in a timed round, counted from when it appears. */
   feedbackMs: number;
+  /** Reduced motion shortens the shot to three still frames (timing.ts). */
+  reducedMotion?: boolean;
 }
 
 export const DEFAULTS = { roundMs: 30_000, setupMs: 600, feedbackMs: 1_200 } as const;
@@ -59,7 +63,8 @@ export interface GameState {
   seed: number;
   rep: LiveRep | null;
   /** The rep just resolved, shown in feedback. */
-  last: { record: RepRecord; scenario: Scenario; timing: Timing; readStartsAt: number } | null;
+  /** The rep just resolved. `revealAt` (game time) is when its card may appear: after the shot lands. */
+  last: { record: RepRecord; scenario: Scenario; timing: Timing; readStartsAt: number; revealAt: number } | null;
   /** Game time when feedback ends on its own. Null waits for Continue (Practice). */
   feedbackEndsAt: number | null;
   startedAt: number;
@@ -113,6 +118,9 @@ function resolve(s: GameState, at: number, tap: { zone: Zone; atMs: number } | n
     { mode: sc.mode, fake: sc.fake, bestZone: sc.bestZone, goodZones: sc.goodZones, windowMs: rep.timing.windowMs, releaseMs: rep.timing.releaseMs, baitZone: sc.baitZone },
     tap
   );
+  const responseMs = tap ? tap.atMs : rep.timing.windowMs;
+  const sched = shotSchedule(sc.mode, sc.fake, rep.timing, responseMs, !!s.config.reducedMotion);
+  const revealAt = rep.readStartsAt + sched.revealAt;
   const record: RepRecord = {
     scenarioId: sc.id,
     tappedZone: tap?.zone ?? null,
@@ -128,10 +136,11 @@ function resolve(s: GameState, at: number, tap: { zone: Zone; atMs: number } | n
     score: addToRound(s.score, result.points),
     reps: [...s.reps, record],
     ramp: s.config.practice ? s.ramp : updateRamp(s.ramp, result.outcome),
-    last: { record, scenario: sc, timing: rep.timing, readStartsAt: rep.readStartsAt },
+    last: { record, scenario: sc, timing: rep.timing, readStartsAt: rep.readStartsAt, revealAt },
     rep: null,
     clock: stopClock(s.clock, at),
-    feedbackEndsAt: s.config.practice ? null : at + s.config.feedbackMs
+    // The shot plays first; the card (and its dwell) starts once the ball has landed.
+    feedbackEndsAt: s.config.practice ? null : revealAt + s.config.feedbackMs
   };
 }
 
@@ -208,7 +217,8 @@ export function reduce(s: GameState, e: GameEvent): GameState {
       if (s.phase !== 'reading' || !s.rep) return s;
       return resolve(s, t, { zone: e.zone, atMs: Math.max(0, t - s.rep.readStartsAt) });
     case 'continue':
-      if (s.phase !== 'feedback') return s;
+      // No skipping the shot: Next and Space work once the card is up.
+      if (s.phase !== 'feedback' || (s.last && t < s.last.revealAt)) return s;
       return advance(next(s, t), t);
   }
 }
