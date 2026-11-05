@@ -71,7 +71,7 @@ Start screen  ->  Round (30 s clock)  ->  Round summary  ->  Play again / Change
    zone outlines with YOU and BEST tags appear on the goal. In a timed round it lasts
    about 1.2 s with an auto-advance bar and no Next button (Space or Enter skips); the
    clock is stopped. In Practice mode it waits for Next and the line is the `rulesNote`.
-   (Proposed, pending Marty: BUILD.md D35 and D36.)
+   (Advance behavior: D35. Card wording proposed in D36, pending Marty.)
 
 Scenarios don't repeat inside a round until the eligible pool runs out. Mirrored copies
 (section 6) count as their own scenarios.
