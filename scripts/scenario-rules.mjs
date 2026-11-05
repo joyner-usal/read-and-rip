@@ -7,6 +7,9 @@ export const DASHES = /[\u2013\u2014]|--/;
 /** Words that may stop being true when a scenario is flipped left to right (D16). */
 export const SIDE_WORDS = /\b(left|right|strong hand|weak hand|hash(es)?|wings?|near side|far side)\b/i;
 
+/** True when a scenario gets a mirrored copy in play (D16 and its amendment). */
+export const mirrored = s => s.mirror !== false && s.mirrorReady !== false;
+
 /**
  * @param {object} s   a scenario that already passed the JSON Schema
  * @param {{ folder?: string, fileBase?: string, strict?: boolean }} ctx
@@ -38,7 +41,15 @@ export function crossChecks(s, ctx = {}) {
   if (DASHES.test(s.rulesNote)) errors.push('rulesNote has an em dash, en dash, or "--"; rewrite the sentence');
   if (ctx.strict && s.status !== 'approved') errors.push('status is "draft" (strict mode)');
 
-  const side = s.mirror !== false && s.rulesNote.match(SIDE_WORDS);
+  // D16 amendment: sprites are never mirrored, so a goalie-mode mirror needs a lefty shooter.
+  if (s.mode === 'goalie' && s.mirror !== false && s.mirrorReady !== false) {
+    warnings.push('goalie-mode mirrors need left-handed shooter sprites; set "mirrorReady": false until they exist');
+  }
+  if (s.game === 'boys' && s.mode === 'goalie' && s.shooterHand === 'left') {
+    warnings.push('the boys art has no left-handed shooter yet, so this scenario is held back in play');
+  }
+
+  const side = mirrored(s) && s.rulesNote.match(SIDE_WORDS);
   if (side) warnings.push(`rulesNote says "${side[0]}" and this scenario mirrors. Check the note still reads true flipped, or set "mirror": false`);
   return { errors, warnings };
 }

@@ -20,6 +20,7 @@ describe('mirroring (D16)', () => {
   it('mirrors by default and counts copies in the pool', () => expect(withMirrors([sc(), sc({ id: 'b' })]).map(s => s.id)).toEqual(['boys-shooter-t-001', 'boys-shooter-t-001-m', 'b', 'b-m']));
   it('honors mirror: false', () => expect(withMirrors([sc({ mirror: false })])).toHaveLength(1));
   it('mirror: true behaves like the default', () => expect(withMirrors([sc({ mirror: true })])).toHaveLength(2));
+  it('holds the copy back when mirrorReady is false', () => expect(withMirrors([sc({ mode: 'goalie', mirrorReady: false })])).toHaveLength(1));
 });
 
 describe('zones', () => {

@@ -69,6 +69,18 @@
   --rr-shooter-jersey: var(--rr-navy);
   --rr-net-back: rgb(255 255 255 / 0.10);
 
+  /* Game UI over the field (Phase 1.5 style frame) */
+  --rr-hud-label: #C7D2EA;
+  --rr-hud-ring: rgb(255 255 255 / 0.45);
+  --rr-readbar-track: rgb(0 31 88 / 0.3);
+  --rr-pill: rgb(0 31 88 / 0.9);
+  --rr-chip-bg: #EEF2F9;
+  --rr-card-text: #1F2A44;
+  --rr-card-track: #E3E8F2;
+  --rr-card-shadow: rgb(0 0 0 / 0.35);
+  --rr-ground-shadow: rgb(0 0 0 / 0.38);
+  --rr-ground-shadow-edge: rgb(0 0 0 / 0);
+
   /* Roles */
   --rr-bg: var(--rr-off-white);
   --rr-surface: var(--rr-white);
@@ -111,12 +123,14 @@
   --rr-dur-fast: 120ms;
   --rr-dur-med: 240ms;
   --rr-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --rr-card-delay: 140ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root {
+  :root:not([data-reduced-motion='off']) {
     --rr-dur-fast: 0ms;
     --rr-dur-med: 0ms;
+    --rr-card-delay: 0ms;
   }
 }
 
@@ -124,4 +138,5 @@
 :root[data-reduced-motion='on'] {
   --rr-dur-fast: 0ms;
   --rr-dur-med: 0ms;
+  --rr-card-delay: 0ms;
 }

@@ -59,7 +59,7 @@ export interface GameState {
   seed: number;
   rep: LiveRep | null;
   /** The rep just resolved, shown in feedback. */
-  last: { record: RepRecord; scenario: Scenario; timing: Timing } | null;
+  last: { record: RepRecord; scenario: Scenario; timing: Timing; readStartsAt: number } | null;
   /** Game time when feedback ends on its own. Null waits for Continue (Practice). */
   feedbackEndsAt: number | null;
   startedAt: number;
@@ -128,7 +128,7 @@ function resolve(s: GameState, at: number, tap: { zone: Zone; atMs: number } | n
     score: addToRound(s.score, result.points),
     reps: [...s.reps, record],
     ramp: s.config.practice ? s.ramp : updateRamp(s.ramp, result.outcome),
-    last: { record, scenario: sc, timing: rep.timing },
+    last: { record, scenario: sc, timing: rep.timing, readStartsAt: rep.readStartsAt },
     rep: null,
     clock: stopClock(s.clock, at),
     feedbackEndsAt: s.config.practice ? null : at + s.config.feedbackMs
@@ -218,6 +218,16 @@ export function reduce(s: GameState, e: GameEvent): GameState {
 export function clockLeftMs(s: GameState, now: number): number {
   const t = s.paused && s.pausedAt !== null ? gameTime(s, s.pausedAt) : gameTime(s, now);
   return remainingMs(s.clock, t);
+}
+
+/** Game time now: real time minus pauses, frozen while paused. */
+export function gameNow(s: GameState, now: number): number {
+  return s.paused && s.pausedAt !== null ? gameTime(s, s.pausedAt) : gameTime(s, now);
+}
+
+/** Ms since the last resolved rep's read window opened (keeps counting through feedback). */
+export function lastElapsedMs(s: GameState, now: number): number | null {
+  return s.last ? gameNow(s, now) - s.last.readStartsAt : null;
 }
 
 /** Ms into the current read window (negative during set up), or null. */

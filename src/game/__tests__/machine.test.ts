@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGame, reduce, clockLeftMs, readElapsedMs, summarize, DEFAULTS, type GameConfig, type GameEvent, type GameState } from '../machine';
+import { createGame, reduce, clockLeftMs, readElapsedMs, lastElapsedMs, summarize, DEFAULTS, type GameConfig, type GameEvent, type GameState } from '../machine';
 import { sc } from './fixtures';
 
 const cfg = (over: Partial<GameConfig> = {}): GameConfig => ({ game: 'boys', mode: 'shooter', practice: false, longerWindows: false, ...DEFAULTS, ...over });
@@ -29,6 +29,15 @@ describe('rep flow', () => {
     expect(g.phase).toBe('feedback');
     expect(g.reps[0]).toMatchObject({ outcome: 'best', points: 4, responseMs: 500, speedBonus: true, level: 1 });
     expect(g.score).toBe(4);
+  });
+
+  it('keeps a pause-aware clock on the last rep through feedback', () => {
+    let g = play(createGame(cfg(), pool, 1, 0), { type: 'tap', zone: 'low-right', now: 1100 });
+    expect(lastElapsedMs(g, 1300)).toBe(700);
+    g = play(g, { type: 'pause', now: 1300 });
+    expect(lastElapsedMs(g, 9000)).toBe(700);
+    g = play(g, { type: 'resume', now: 9000 });
+    expect(lastElapsedMs(g, 9100)).toBe(800);
   });
 
   it('times out when the window closes with no tap', () => {

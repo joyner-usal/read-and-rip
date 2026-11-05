@@ -40,6 +40,7 @@ npm run check      # validate scenarios, typecheck, unit tests, production build
 | `npm run validate` | Check every scenario file. Add `-- --strict` to also fail on drafts |
 | `npm run typecheck` | TypeScript check |
 | `npm test` | Unit tests (Vitest) |
+| `python3 scripts/build-sprites.py` | Rebuild the boys sprites and manifest from the zip (needs Pillow with WebP) |
 
 ## Layout
 
@@ -47,10 +48,12 @@ npm run check      # validate scenarios, typecheck, unit tests, production build
 brand/            tokens.css (all colors, type, spacing), fonts/ and logo/ placeholders
 schemas/          scenario JSON Schema
 scenarios/        boys/ and girls/, one JSON file per scenario
-scripts/          validate-scenarios.mjs, scenario-rules.mjs, make-icons.mjs
+scripts/          validate-scenarios.mjs, scenario-rules.mjs, make-icons.mjs, build-sprites.py
+public/sprites/   built WebP sprites (from read-and-rip-sprites.zip)
 src/game/         the game loop (pure TypeScript): machine, clock, scoring, ramp, mirror
-src/anim/         cue animation as data (poses over time)
-src/field/        canvas scene and the 3x3 grid buttons
+src/art/          boys sprite scene: manifest, preloader, poses, ball, renderer
+src/anim/         cue animation for the code-drawn (girls) field
+src/field/        the stage (canvas plus the 3x3 grid buttons) and the code-drawn scene
 src/screens/      start, game, summary, settings
 src/scenarios/    scenario types and loader
 src/storage/      localStorage shape and helpers, with tests
@@ -71,7 +74,8 @@ public/icons/     app icons (code-drawn SVG, PNGs rendered from it)
 - Colors only in `brand/tokens.css`. No hex values in components.
 - Never commit font files: the repo is public. Fallback fonts render until hosting is
   settled.
-- No AI imagery. Art is drawn in code.
+- AI-generated game art is approved for this project (BUILD.md D29); never present AI
+  images as real photos. Never mirror a sprite (D30).
 - No em dashes in any copy.
 
 ## Deploy

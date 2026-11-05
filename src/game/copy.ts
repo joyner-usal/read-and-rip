@@ -31,3 +31,27 @@ export function zoneForMode(z: Zone, mode: Mode): string {
 export function bestLine(best: Zone, mode: Mode): string {
   return `Best spot: ${zoneForMode(best, mode)}`;
 }
+
+// ---- Feedback card (Phase 1.5, style frame). Proposed wording, pending Marty (BUILD.md). ----
+
+const CARD_WORD: Record<Mode, Record<Outcome, string>> = {
+  shooter: { best: 'Goal', good: 'Goal', miss: 'Wide', timeout: 'Too late', early: 'Too early', bait: 'Took the bait' },
+  goalie: { best: 'Save', good: 'Save', miss: 'Scored on', timeout: 'Too late', early: 'Bit on the fake', bait: 'Took the bait' }
+};
+
+export const cardWord = (outcome: Outcome, mode: Mode): string => CARD_WORD[mode][outcome];
+
+export const cardPoints = (points: number): string => signed(points);
+
+/** Scoring chips: what earned (or cost) the points, always in words. */
+export function cardChips(outcome: Outcome, speedBonus: boolean): string[] {
+  const chips: string[] = [];
+  if (outcome === 'best') chips.push('Best spot +3');
+  if (outcome === 'good') chips.push('Good spot +1');
+  if (speedBonus) chips.push('Fast read +1');
+  if (outcome === 'miss') chips.push('Missed the read 0');
+  if (outcome === 'timeout') chips.push('No tap 0');
+  if (outcome === 'early') chips.push('Early tap -1');
+  if (outcome === 'bait') chips.push('Bait spot 0');
+  return chips;
+}

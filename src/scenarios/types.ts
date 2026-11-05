@@ -59,6 +59,11 @@ export interface Scenario {
   closeMs?: number;
   /** Left to right copy allowed. Missing means true (D16). */
   mirror?: boolean;
+  /**
+   * False holds the mirrored copy back until the art can show it (D16 amendment): the
+   * sprites are never mirrored, so a goalie-mode mirror would need a left-handed shooter.
+   */
+  mirrorReady?: boolean;
   bestZone: Zone;
   goodZones: Zone[];
   /** 1 (easiest) to 5. Drives the difficulty ramp. */
