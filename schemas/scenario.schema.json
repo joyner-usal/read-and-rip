@@ -142,6 +142,11 @@
       "type": "boolean",
       "default": true,
       "description": "Left to right copy allowed. Missing means true."
+    },
+    "mirrorReady": {
+      "type": "boolean",
+      "default": true,
+      "description": "False holds the mirrored copy back until the art can show it. Goalie-mode scenarios set false until left-handed shooter sprites exist (D16 amendment)."
     }
   }
 }

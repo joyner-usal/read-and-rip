@@ -8,7 +8,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv from 'ajv';
-import { crossChecks } from './scenario-rules.mjs';
+import { crossChecks, mirrored } from './scenario-rules.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const strict = process.argv.includes('--strict');
@@ -28,6 +28,7 @@ const seen = new Map();
 let failed = 0;
 let warned = 0;
 let drafts = 0;
+let heldBack = 0;
 
 for (const file of files) {
   const rel = relative(root, file);
@@ -47,7 +48,8 @@ for (const file of files) {
     const r = crossChecks(data, { folder: basename(dirname(file)), fileBase: basename(file, '.json'), strict });
     errors.push(...r.errors);
     warnings.push(...r.warnings);
-    for (const id of [data.id, data.mirror === false ? null : `${data.id}-m`].filter(Boolean)) {
+    if (data.mirror !== false && data.mirrorReady === false) heldBack++;
+    for (const id of [data.id, mirrored(data) ? `${data.id}-m` : null].filter(Boolean)) {
       if (seen.has(id)) errors.push(`duplicate id "${id}", also in ${seen.get(id)}`);
       seen.set(id, rel);
     }
@@ -64,4 +66,5 @@ for (const file of files) {
 }
 
 console.log(`${files.length} scenario file(s), ${files.length - failed} valid, ${failed} with errors, ${warned} with warnings, ${drafts} draft(s).`);
+console.log(`${heldBack} mirrored cop${heldBack === 1 ? 'y' : 'ies'} held back (mirrorReady: false) until left-handed shooter sprites exist.`);
 process.exit(failed ? 1 : 0);

@@ -1,0 +1,321 @@
+{
+  "frame": {
+    "w": 390,
+    "h": 844
+  },
+  "mouth": {
+    "x": 112.5,
+    "y": 357.6,
+    "w": 165.0,
+    "h": 164.4
+  },
+  "background": {
+    "x": -58.5,
+    "y": -122.46,
+    "w": 507.0,
+    "h": 1098.5
+  },
+  "goal": {
+    "x": 97.5,
+    "y": 348.6,
+    "w": 195.38,
+    "h": 178.88
+  },
+  "goalieFeet": [
+    195,
+    535
+  ],
+  "shooterHelmet": [
+    134.19,
+    858
+  ],
+  "sprites": {
+    "background": {
+      "file": "sprites/boys/background.webp",
+      "px": [
+        852,
+        1846
+      ],
+      "draw": [
+        507.0,
+        1098.5
+      ],
+      "bytes": 165370
+    },
+    "goal": {
+      "file": "sprites/boys/goal.webp",
+      "px": [
+        391,
+        358
+      ],
+      "draw": [
+        195.38,
+        178.88
+      ],
+      "bytes": 109676
+    },
+    "goalie_gray_dive_screenleft": {
+      "file": "sprites/boys/goalie_gray_dive_screenleft.webp",
+      "px": [
+        373,
+        327
+      ],
+      "draw": [
+        186.7,
+        163.7
+      ],
+      "bytes": 23090,
+      "anchorKind": "pocket",
+      "anchor": [
+        33.29,
+        30.54
+      ]
+    },
+    "goalie_gray_high_screenleft_lean": {
+      "file": "sprites/boys/goalie_gray_high_screenleft_lean.webp",
+      "px": [
+        264,
+        347
+      ],
+      "draw": [
+        132.13,
+        173.66
+      ],
+      "bytes": 25272,
+      "anchorKind": "feet",
+      "anchor": [
+        72.07,
+        170.91
+      ]
+    },
+    "goalie_gray_high_screenright": {
+      "file": "sprites/boys/goalie_gray_high_screenright.webp",
+      "px": [
+        259,
+        347
+      ],
+      "draw": [
+        129.38,
+        173.66
+      ],
+      "bytes": 24530,
+      "anchorKind": "feet",
+      "anchor": [
+        61.95,
+        171.25
+      ]
+    },
+    "goalie_gray_low_screenleft": {
+      "file": "sprites/boys/goalie_gray_low_screenleft.webp",
+      "px": [
+        252,
+        254
+      ],
+      "draw": [
+        125.95,
+        126.98
+      ],
+      "bytes": 20654,
+      "anchorKind": "feet",
+      "anchor": [
+        62.8,
+        124.58
+      ]
+    },
+    "goalie_gray_low_screenright": {
+      "file": "sprites/boys/goalie_gray_low_screenright.webp",
+      "px": [
+        266,
+        262
+      ],
+      "draw": [
+        132.82,
+        131.1
+      ],
+      "bytes": 21308,
+      "anchorKind": "feet",
+      "anchor": [
+        65.38,
+        128.7
+      ]
+    },
+    "goalie_gray_ready_high_screenleft": {
+      "file": "sprites/boys/goalie_gray_ready_high_screenleft.webp",
+      "px": [
+        229,
+        348
+      ],
+      "draw": [
+        114.63,
+        174.0
+      ],
+      "bytes": 24480,
+      "anchorKind": "feet",
+      "anchor": [
+        57.14,
+        171.25
+      ]
+    },
+    "goalie_navy_dive_screenleft": {
+      "file": "sprites/boys/goalie_navy_dive_screenleft.webp",
+      "px": [
+        373,
+        346
+      ],
+      "draw": [
+        186.7,
+        172.92
+      ],
+      "bytes": 24044,
+      "anchorKind": "pocket",
+      "anchor": [
+        35.56,
+        31.56
+      ]
+    },
+    "shooter_gray_carry": {
+      "file": "sprites/boys/shooter_gray_carry.webp",
+      "px": [
+        227,
+        339
+      ],
+      "draw": [
+        185.0,
+        276.28
+      ],
+      "bytes": 26142,
+      "anchorKind": "helmet",
+      "anchor": [
+        31.78,
+        270.58
+      ]
+    },
+    "shooter_gray_cocked": {
+      "file": "sprites/boys/shooter_gray_cocked.webp",
+      "px": [
+        317,
+        338
+      ],
+      "draw": [
+        258.35,
+        275.47
+      ],
+      "bytes": 28610,
+      "anchorKind": "helmet",
+      "anchor": [
+        27.71,
+        269.76
+      ]
+    },
+    "shooter_gray_follow": {
+      "file": "sprites/boys/shooter_gray_follow.webp",
+      "px": [
+        390,
+        321
+      ],
+      "draw": [
+        317.85,
+        261.62
+      ],
+      "bytes": 25352,
+      "anchorKind": "helmet",
+      "anchor": [
+        13.04,
+        255.91
+      ]
+    },
+    "shooter_gray_release": {
+      "file": "sprites/boys/shooter_gray_release.webp",
+      "px": [
+        338,
+        361
+      ],
+      "draw": [
+        275.47,
+        294.21
+      ],
+      "bytes": 26618,
+      "anchorKind": "helmet",
+      "anchor": [
+        22.82,
+        287.69
+      ],
+      "pocket": [
+        237.16,
+        35.04
+      ]
+    },
+    "shooter_navy_carry": {
+      "file": "sprites/boys/shooter_navy_carry.webp",
+      "px": [
+        321,
+        491
+      ],
+      "draw": [
+        179.19,
+        274.09
+      ],
+      "bytes": 36968,
+      "anchorKind": "helmet",
+      "anchor": [
+        21.21,
+        269.62
+      ]
+    },
+    "shooter_navy_cocked": {
+      "file": "sprites/boys/shooter_navy_cocked.webp",
+      "px": [
+        475,
+        488
+      ],
+      "draw": [
+        265.15,
+        272.41
+      ],
+      "bytes": 41542,
+      "anchorKind": "helmet",
+      "anchor": [
+        16.19,
+        268.5
+      ]
+    },
+    "shooter_navy_follow": {
+      "file": "sprites/boys/shooter_navy_follow.webp",
+      "px": [
+        390,
+        320
+      ],
+      "draw": [
+        317.85,
+        260.8
+      ],
+      "bytes": 25222,
+      "anchorKind": "helmet",
+      "anchor": [
+        10.59,
+        255.09
+      ]
+    },
+    "shooter_navy_release": {
+      "file": "sprites/boys/shooter_navy_release.webp",
+      "px": [
+        339,
+        361
+      ],
+      "draw": [
+        276.28,
+        294.21
+      ],
+      "bytes": 26680,
+      "anchorKind": "helmet",
+      "anchor": [
+        22.0,
+        287.69
+      ],
+      "pocket": [
+        237.16,
+        35.04
+      ]
+    }
+  }
+}

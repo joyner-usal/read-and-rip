@@ -7,8 +7,11 @@ const files = import.meta.glob<Scenario>('/scenarios/**/*.json', { eager: true, 
 
 export const includeDrafts: boolean = import.meta.env.DEV || import.meta.env.VITE_INCLUDE_DRAFTS === 'true';
 
+/** The boys art has right-handed shooters only, so boys goalie-mode lefties wait (D16 amendment). */
+export const drawable = (s: Scenario) => !(s.game === 'boys' && s.mode === 'goalie' && s.shooterHand === 'left');
+
 export function selectScenarios(all: Scenario[], drafts: boolean): Scenario[] {
-  return withMirrors(all.filter(s => drafts || s.status === 'approved')).sort((a, b) => a.id.localeCompare(b.id));
+  return withMirrors(all.filter(s => (drafts || s.status === 'approved') && drawable(s))).sort((a, b) => a.id.localeCompare(b.id));
 }
 
 export const allScenarios: Scenario[] = Object.values(files);

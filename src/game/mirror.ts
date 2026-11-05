@@ -19,7 +19,13 @@ export function mirrorScenario(s: Scenario): Scenario {
 
 export const isMirror = (s: Scenario) => s.id.endsWith(MIRROR_SUFFIX);
 
-/** The playable pool: each scenario plus its mirror unless it opts out. */
+/** Whether a scenario gets a mirrored copy: not when it opts out or isn't ready (D16). */
+export const mirrors = (s: Scenario) => s.mirror !== false && s.mirrorReady !== false;
+
+/**
+ * The playable pool: each scenario plus its mirror. Mirrors flip zones and approach
+ * data only; the art is never mirrored (D16 amendment).
+ */
 export function withMirrors(list: Scenario[]): Scenario[] {
-  return list.flatMap(s => (s.mirror === false ? [s] : [s, mirrorScenario(s)]));
+  return list.flatMap(s => (mirrors(s) ? [s, mirrorScenario(s)] : [s]));
 }

@@ -9,10 +9,12 @@ import { Start } from './screens/Start';
 import { Game } from './screens/Game';
 import { Summary } from './screens/Summary';
 import { Settings } from './screens/Settings';
+import { loadSprites, spritesReady, type SpriteImages } from './art/loader';
 
 type Screen =
   | { name: 'start' }
   | { name: 'settings' }
+  | { name: 'loading'; config: GameConfig; error: boolean }
   | { name: 'game'; config: GameConfig; key: number }
   | { name: 'summary'; config: GameConfig; final: GameState; previousBest: number | null; newBest: boolean };
 
@@ -22,6 +24,8 @@ export default function App() {
   const [data, setData] = useState(load);
   const [screen, setScreen] = useState<Screen>({ name: 'start' });
   const reduced = useReducedMotion(data.settings.reducedMotion);
+  const [sprites, setSprites] = useState<SpriteImages | null>(spritesReady);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     save(data);
@@ -37,10 +41,31 @@ export default function App() {
   const { game, mode, longerWindows } = data.settings;
   const available = useMemo(() => (game ? scenarios.filter(s => s.game === game && s.mode === mode).length : 0), [game, mode]);
 
+  // The boys field plays on the sprite set: start loading it as soon as Boys is picked.
+  const preload = useCallback(() => {
+    return loadSprites((done, total) => setProgress(done / total)).then(imgs => {
+      setSprites(imgs);
+      return imgs;
+    });
+  }, []);
+  useEffect(() => {
+    if (game === 'boys' && !sprites) preload().catch(() => undefined);
+  }, [game, sprites, preload]);
+
+  const startGame = (config: GameConfig) => {
+    if (config.game === 'boys' && !spritesReady()) {
+      setScreen({ name: 'loading', config, error: false });
+      preload()
+        .then(() => setScreen({ name: 'game', config, key: Date.now() }))
+        .catch(() => setScreen({ name: 'loading', config, error: true }));
+      return;
+    }
+    setScreen({ name: 'game', config, key: Date.now() });
+  };
+
   const play = (practice: boolean) => {
     if (!game) return;
-    const config: GameConfig = { game, mode, practice, longerWindows, ...DEFAULTS };
-    setScreen({ name: 'game', config, key: Date.now() });
+    startGame({ game, mode, practice, longerWindows, ...DEFAULTS });
   };
 
   const finish = useCallback(
@@ -75,7 +100,39 @@ export default function App() {
   if (screen.name === 'game') {
     return (
       <div className="app app--game">
-        <Game key={screen.key} config={screen.config} pool={scenarios} reducedMotion={reduced} haptics={data.settings.haptics} onDone={finish} />
+        <Game
+          key={screen.key}
+          config={screen.config}
+          pool={scenarios}
+          reducedMotion={reduced}
+          haptics={data.settings.haptics}
+          sprites={screen.config.game === 'boys' ? sprites : null}
+          onDone={finish}
+        />
+      </div>
+    );
+  }
+  if (screen.name === 'loading') {
+    return (
+      <div className="app">
+        <main className="screen loading">
+          <p className="eyebrow">Read and Rip</p>
+          {screen.error ? (
+            <>
+              <h1 className="title title--small">Couldn't load the field</h1>
+              <p className="lede">Check your connection and try again.</p>
+              <button type="button" className="cta" onClick={() => startGame(screen.config)}>Try again</button>
+              <button type="button" className="btn" onClick={() => setScreen({ name: 'start' })}>Back</button>
+            </>
+          ) : (
+            <>
+              <h1 className="title title--small">Loading the field</h1>
+              <div className="loadbar" role="progressbar" aria-label="Loading" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
+                <div className="loadbar__fill" style={{ transform: `scaleX(${progress})` }} />
+              </div>
+            </>
+          )}
+        </main>
       </div>
     );
   }
@@ -95,7 +152,7 @@ export default function App() {
           previousBest={screen.previousBest}
           newBest={screen.newBest}
           review={review}
-          onAgain={() => setScreen({ name: 'game', config: screen.config, key: Date.now() })}
+          onAgain={() => startGame(screen.config)}
           onHome={() => setScreen({ name: 'start' })}
         />
       </div>

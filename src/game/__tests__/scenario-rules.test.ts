@@ -39,5 +39,15 @@ describe('validator rules', () => {
     expect(warns({ rulesNote: 'Shoot left side.', mirror: false })).toEqual([]);
     expect(warns({ rulesNote: 'Bright, leftover, wingspan words.' })).toEqual([]);
   });
+  it('asks goalie-mode scenarios to hold their mirror back (D16 amendment)', () => {
+    const g = { id: 'boys-goalie-t-001', mode: 'goalie', cueType: 'hands-low' };
+    expect(warns(g).join()).toMatch(/mirrorReady/);
+    expect(warns({ ...g, mirrorReady: false })).toEqual([]);
+    expect(warns({ ...g, mirror: false })).toEqual([]);
+  });
+  it('flags boys goalie-mode lefties, which the art cannot show yet', () => {
+    expect(warns({ id: 'boys-goalie-t-001', mode: 'goalie', cueType: 'hands-low', mirrorReady: false, shooterHand: 'left' }).join()).toMatch(/held back/);
+  });
+  it('no side-word warning when the mirror is held back', () => expect(warns({ id: 'boys-goalie-t-001', mode: 'goalie', cueType: 'hands-low', mirrorReady: false, rulesNote: 'Watch the right hand.' })).toEqual([]));
   it('bans dashes in rules notes', () => expect(errs({ rulesNote: 'Stay set -- then go.' }).join()).toMatch(/em dash/));
 });

@@ -1,13 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { FieldView, type Mark } from '../field/FieldView';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Stage, type Mark } from '../field/Stage';
 import type { SceneInput } from '../field/scene';
+import { LegacyRenderer } from '../field/legacyRenderer';
+import { BoysRenderer, type StageRenderer } from '../art/renderer';
+import type { SpriteImages } from '../art/loader';
+import type { RepView } from '../art/poses';
 import {
   ballAt, FLIGHT_MS, goalieTimeline, NEUTRAL_GOALIE, sample, shooterCarry, shooterLoad, shooterTimeline
 } from '../anim/cues';
 import {
-  clockLeftMs, createGame, readElapsedMs, reduce, type GameConfig, type GameEvent, type GameState
+  clockLeftMs, createGame, gameNow, lastElapsedMs, readElapsedMs, reduce, type GameConfig, type GameEvent, type GameState
 } from '../game/machine';
-import { bestLine, resultHeadline, SPEED_LINE } from '../game/copy';
+import { bestLine, cardChips, cardPoints, cardWord } from '../game/copy';
 import { colIndex, goalieLabel, rowIndex, zoneFromKey } from '../game/zones';
 import { isScoring } from '../game/scoring';
 import { randomSeed } from '../game/rng';
@@ -19,6 +23,8 @@ interface Props {
   pool: Scenario[];
   reducedMotion: boolean;
   haptics: boolean;
+  /** Boys sprite set, preloaded. Null uses the code-drawn field (girls, for now). */
+  sprites: SpriteImages | null;
   onDone: (final: GameState) => void;
 }
 
@@ -30,17 +36,89 @@ const vibrate = (ms: number) => {
   }
 };
 
-export function Game({ config, pool, reducedMotion, haptics, onDone }: Props) {
+const clockText = (ms: number) => {
+  const s = Math.ceil(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+};
+
+/** The current rep as the sprite renderer sees it. */
+function repView(s: GameState, now: number): RepView | null {
+  if (s.rep) {
+    return {
+      mode: s.config.mode,
+      phase: s.phase === 'reading' ? 'reading' : 'setup',
+      scenario: s.rep.scenario,
+      timing: s.rep.timing,
+      repMs: readElapsedMs(s, now) ?? 0,
+      resolveMs: null,
+      outcome: null,
+      tapped: null
+    };
+  }
+  if (s.last) {
+    const r = s.last.record;
+    return {
+      mode: s.config.mode,
+      phase: 'feedback',
+      scenario: s.last.scenario,
+      timing: s.last.timing,
+      repMs: lastElapsedMs(s, now) ?? 0,
+      resolveMs: r.responseMs ?? s.last.timing.windowMs,
+      outcome: r.outcome,
+      tapped: r.tappedZone
+    };
+  }
+  return null;
+}
+
+/** The code-drawn field, for packs with no sprite set yet. */
+function legacyScene(s: GameState, now: number, reduced: boolean): SceneInput | null {
+  const sc = s.rep?.scenario ?? s.last?.scenario ?? s.pool[0];
+  if (!sc) return null;
+  const base = { game: sc.game, approachAngleDeg: sc.approachAngleDeg, shooterHand: sc.shooterHand };
+  if (s.rep) {
+    const t = Math.max(0, readElapsedMs(s, now) ?? 0);
+    const timing = s.rep.timing;
+    return {
+      ...base,
+      goalie: sample(goalieTimeline(sc, timing), t, reduced),
+      shooter: sample(shooterTimeline(sc, timing), t, reduced),
+      ball: ballAt(sc, timing, t, reduced)
+    };
+  }
+  if (s.last) {
+    const { timing, record } = s.last;
+    const end = timing.windowMs;
+    const since = (lastElapsedMs(s, now) ?? end) - (record.responseMs ?? end);
+    const goalie = sample(goalieTimeline(sc, timing), end, true);
+    let shooter = sample(shooterTimeline(sc, timing), end, true);
+    let ball = ballAt(sc, timing, end + FLIGHT_MS, true);
+    if (sc.mode === 'shooter' && record.tappedZone) {
+      const z: Zone = record.tappedZone;
+      const k = reduced ? 1 : Math.min(1, since / FLIGHT_MS);
+      const from = shooterCarry(sc);
+      shooter = k < 1 ? shooterLoad(sc, z) : from;
+      ball = { x: from.headX + (colIndex(z) * (2 / 3) - from.headX) * k, y: from.headY + (rowIndex(z) * (2 / 3) - from.headY) * k, progress: k };
+    }
+    return { ...base, goalie, shooter, ball };
+  }
+  return { ...base, goalie: NEUTRAL_GOALIE, shooter: shooterCarry(sc), ball: null };
+}
+
+export function Game({ config, pool, reducedMotion, haptics, sprites, onDone }: Props) {
   const stateRef = useRef<GameState | null>(null);
   if (stateRef.current === null) stateRef.current = createGame(config, pool, randomSeed(), performance.now());
   const [state, setState] = useState<GameState>(stateRef.current);
-  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  const [clock, setClock] = useState(clockText(config.roundMs));
   const [announce, setAnnounce] = useState('');
-  const feedbackStart = useRef(0);
   const secRef = useRef<number | null>(null);
   const doneSent = useRef(false);
-  const continueRef = useRef<HTMLButtonElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
   const resumeRef = useRef<HTMLButtonElement>(null);
+  const readBar = useRef<HTMLDivElement>(null);
+  const advanceBar = useRef<HTMLDivElement>(null);
+  const reducedRef = useRef(reducedMotion);
+  reducedRef.current = reducedMotion;
 
   const dispatch = useCallback((e: GameEvent) => {
     const prev = stateRef.current!;
@@ -51,14 +129,22 @@ export function Game({ config, pool, reducedMotion, haptics, onDone }: Props) {
     }
   }, []);
 
-  // React to state changes: feedback start, haptics, announcements, end of round.
+  const renderer: StageRenderer = useMemo(
+    () =>
+      sprites
+        ? new BoysRenderer({ images: sprites, view: now => repView(stateRef.current!, now), reduced: () => reducedRef.current })
+        : new LegacyRenderer(now => legacyScene(stateRef.current!, now, reducedRef.current)),
+    [sprites]
+  );
+
+  // React to new results: announcement, haptics, end of round.
   const lastReps = useRef(0);
   useEffect(() => {
     if (state.reps.length > lastReps.current && state.last) {
       lastReps.current = state.reps.length;
-      feedbackStart.current = performance.now();
       const r = state.last.record;
-      setAnnounce(`${resultHeadline(r.outcome, r.points, r.speedBonus)}${r.speedBonus ? `. ${SPEED_LINE}` : ''}. ${bestLine(state.last.scenario.bestZone, config.mode)}.`);
+      const chips = cardChips(r.outcome, r.speedBonus).join(', ');
+      setAnnounce(`${cardWord(r.outcome, config.mode)}, ${cardPoints(r.points)}. ${chips}. ${bestLine(state.last.scenario.bestZone, config.mode)}.`);
       if (haptics) vibrate(isScoring(r.outcome) ? 25 : 70);
     }
     if (state.phase === 'summary' && !doneSent.current) {
@@ -68,63 +154,36 @@ export function Game({ config, pool, reducedMotion, haptics, onDone }: Props) {
   }, [state, config.mode, haptics, onDone]);
 
   useEffect(() => {
-    if (state.phase === 'feedback' && config.practice) continueRef.current?.focus();
+    if (state.phase === 'feedback' && config.practice) nextRef.current?.focus();
   }, [state.phase, config.practice]);
   useEffect(() => {
     if (state.paused) resumeRef.current?.focus();
   }, [state.paused]);
 
-  // One animation loop drives both the engine (tick) and the canvas.
-  const getScene = useCallback(
-    (now: number): SceneInput => {
+  // Every frame: tick the engine, then move the read-window and auto-advance bars.
+  const onFrame = useCallback(
+    (now: number) => {
       dispatch({ type: 'tick', now });
       const s = stateRef.current!;
       if (!config.practice) {
-        const sec = Math.ceil(clockLeftMs(s, now) / 1000);
+        const left = clockLeftMs(s, now);
+        const sec = Math.ceil(left / 1000);
         if (sec !== secRef.current) {
           secRef.current = sec;
-          setSecondsLeft(sec);
+          setClock(clockText(left));
           if (sec === 10 || sec === 5) setAnnounce(`${sec} seconds left`);
         }
       }
-      const sc = s.rep?.scenario ?? s.last?.scenario ?? s.pool[0];
-      if (!sc) return { game: config.game, approachAngleDeg: 0, shooterHand: 'right', goalie: NEUTRAL_GOALIE, shooter: { headX: 1.15, headY: 0.35, shoulderTilt: 0 }, ball: null };
-      const base = { game: sc.game, approachAngleDeg: sc.approachAngleDeg, shooterHand: sc.shooterHand };
-
-      if (s.rep) {
-        const t = Math.max(0, readElapsedMs(s, now) ?? 0);
-        const timing = s.rep.timing;
-        return {
-          ...base,
-          goalie: sample(goalieTimeline(sc, timing), t, reducedMotion),
-          shooter: sample(shooterTimeline(sc, timing), t, reducedMotion),
-          ball: ballAt(sc, timing, t, reducedMotion)
-        };
+      if (readBar.current) {
+        const t = s.rep && s.phase === 'reading' ? Math.min(1, (readElapsedMs(s, now) ?? 0) / s.rep.timing.windowMs) : s.phase === 'feedback' ? 1 : 0;
+        readBar.current.style.transform = `scaleX(${t})`;
       }
-      if (s.last) {
-        // Feedback: hold the final read, then show where the ball went.
-        const { timing, record } = s.last;
-        const end = timing.windowMs;
-        const since = now - feedbackStart.current;
-        const goalie = sample(goalieTimeline(sc, timing), end, true);
-        let shooter = sample(shooterTimeline(sc, timing), end, true);
-        let ball = ballAt(sc, timing, end + FLIGHT_MS, true);
-        if (sc.mode === 'shooter' && record.tappedZone) {
-          const z: Zone = record.tappedZone;
-          const k = reducedMotion ? 1 : Math.min(1, since / FLIGHT_MS);
-          const from = shooterCarry(sc);
-          shooter = k < 1 ? shooterLoad(sc, z) : from;
-          ball = {
-            x: from.headX + (colIndex(z) * (2 / 3) - from.headX) * k,
-            y: from.headY + (rowIndex(z) * (2 / 3) - from.headY) * k,
-            progress: k
-          };
-        }
-        return { ...base, goalie, shooter, ball };
+      if (advanceBar.current && s.phase === 'feedback' && s.feedbackEndsAt !== null) {
+        const k = 1 - (s.feedbackEndsAt - gameNow(s, now)) / s.config.feedbackMs;
+        advanceBar.current.style.transform = `scaleX(${Math.max(0, Math.min(1, k))})`;
       }
-      return { ...base, goalie: NEUTRAL_GOALIE, shooter: shooterCarry(sc), ball: null };
     },
-    [config.game, config.practice, dispatch, reducedMotion]
+    [config.practice, dispatch]
   );
 
   const tap = useCallback((zone: Zone, at: number) => dispatch({ type: 'tap', zone, now: at }), [dispatch]);
@@ -141,6 +200,7 @@ export function Game({ config, pool, reducedMotion, haptics, onDone }: Props) {
       const z = zoneFromKey(e.key);
       if (z && !s.paused) {
         e.preventDefault();
+        if (s.phase === 'reading') renderer.rippleZone(z, e.timeStamp);
         tap(z, e.timeStamp);
       } else if ((e.key === 'p' || e.key === 'P' || e.key === 'Escape') && s.phase !== 'summary') {
         e.preventDefault();
@@ -153,7 +213,7 @@ export function Game({ config, pool, reducedMotion, haptics, onDone }: Props) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [tap, next, pause, resume]);
+  }, [tap, next, pause, resume, renderer]);
 
   // Leaving the tab pauses the round.
   useEffect(() => {
@@ -178,9 +238,20 @@ export function Game({ config, pool, reducedMotion, haptics, onDone }: Props) {
 
   const mode = config.mode;
   const level = state.rep?.level ?? state.ramp.level;
+  const prompt = state.phase === 'setup' ? 'Get set' : mode === 'shooter' ? 'Read the goalie. Pick your spot.' : 'Read the shooter. Pick the save.';
 
   return (
     <div className="game">
+      <Stage
+        renderer={renderer}
+        onFrame={onFrame}
+        onTap={tap}
+        disabled={state.phase !== 'reading' || state.paused}
+        marks={inFeedback ? marks : undefined}
+        hidden={state.paused}
+        describeZone={mode === 'goalie' ? z => `your ${goalieLabel(z)} as the goalie` : undefined}
+      />
+
       <div className="hud" role="group" aria-label="Round status">
         {config.practice ? (
           <div className="hud__item">
@@ -188,9 +259,9 @@ export function Game({ config, pool, reducedMotion, haptics, onDone }: Props) {
             <span className="hud__value hud__value--word">Practice</span>
           </div>
         ) : (
-          <div className="hud__item hud__clock">
+          <div className="hud__item">
             <span className="hud__label">Clock</span>
-            <span className="hud__value">{secondsLeft ?? 30}</span>
+            <span className="hud__value">{clock}</span>
           </div>
         )}
         <div className="hud__item">
@@ -207,53 +278,46 @@ export function Game({ config, pool, reducedMotion, haptics, onDone }: Props) {
           {config.practice && !state.paused && (
             <button type="button" className="hud__btn" onClick={end}>End</button>
           )}
-          <button type="button" className="hud__btn" onClick={state.paused ? resume : pause} aria-pressed={state.paused}>
-            {state.paused ? 'Resume' : 'Pause'}
+          <button type="button" className="hud__round" onClick={state.paused ? resume : pause} aria-label={state.paused ? 'Resume' : 'Pause'} aria-pressed={state.paused}>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              {state.paused ? <path d="M5 3L13 8L5 13Z" fill="currentColor" /> : <path d="M5 3V13M11 3V13" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />}
+            </svg>
           </button>
         </div>
       </div>
+      <div className="readbar" aria-hidden="true"><div className="readbar__fill" ref={readBar} /></div>
 
-      <FieldView
-        getScene={getScene}
-        onTap={tap}
-        disabled={state.phase !== 'reading' || state.paused}
-        marks={marks}
-        hidden={state.paused}
-        describeZone={mode === 'goalie' ? z => `your ${goalieLabel(z)} as the goalie` : undefined}
-      />
+      {!state.paused && !inFeedback && (
+        <div className="pill-row"><p className="pill">{prompt}</p></div>
+      )}
 
-      <div className="panel">
-        {state.paused ? (
-          <div className="paused">
-            <h2 className="paused__title">Paused</h2>
-            <p className="paused__note">The field is hidden while paused.</p>
-            <div className="row">
-              <button type="button" className="cta" ref={resumeRef} onClick={resume}>Resume</button>
-              <button type="button" className="btn" onClick={end}>{config.practice ? 'End practice' : 'End round'}</button>
-            </div>
+      {state.paused ? (
+        <div className="card card--paused">
+          <h2 className="card__word">Paused</h2>
+          <p className="card__line">The field is hidden while paused.</p>
+          <div className="row">
+            <button type="button" className="cta" ref={resumeRef} onClick={resume}>Resume</button>
+            <button type="button" className="btn" onClick={end}>{config.practice ? 'End practice' : 'End round'}</button>
           </div>
-        ) : inFeedback ? (
-          <div className={`result result--${last.record.outcome}`}>
-            <div className="result__head">
-              <ResultIcon outcome={last.record.outcome} />
-              <p className="result__word">{resultHeadline(last.record.outcome, last.record.points, last.record.speedBonus)}</p>
-            </div>
-            {last.record.speedBonus && <p className="result__line">{SPEED_LINE}</p>}
-            <p className="result__line">{bestLine(last.scenario.bestZone, mode)}</p>
-            {config.practice && <p className="result__note">{last.scenario.rulesNote}</p>}
-            <button type="button" className={config.practice ? 'cta' : 'btn btn--small'} ref={continueRef} onClick={next}>
-              {config.practice ? 'Continue' : 'Next'}
-            </button>
+        </div>
+      ) : inFeedback ? (
+        <div className={`card result--${last.record.outcome}`}>
+          <div className="card__head">
+            <span className="card__icon"><ResultIcon outcome={last.record.outcome} size={22} /></span>
+            <span className="card__word">{cardWord(last.record.outcome, mode)}</span>
+            <span className="card__points">{cardPoints(last.record.points)}</span>
           </div>
-        ) : (
-          <div className="prompt">
-            <p className="prompt__text">
-              {state.phase === 'setup' ? 'Get set' : mode === 'shooter' ? 'Read the goalie. Pick your spot.' : 'Read the shooter. Pick the save.'}
-            </p>
-            <p className="prompt__keys">Tap the goal, or press 1 to 9.</p>
+          <div className="card__chips">
+            {cardChips(last.record.outcome, last.record.speedBonus).map(c => <span key={c} className="chip-tag">{c}</span>)}
           </div>
-        )}
-      </div>
+          <p className="card__line">{config.practice ? last.scenario.rulesNote : bestLine(last.scenario.bestZone, mode)}</p>
+          {config.practice ? (
+            <button type="button" className="cta card__next" ref={nextRef} onClick={next}>Next</button>
+          ) : (
+            <div className="card__advance" aria-hidden="true"><div className="card__advance-fill" ref={advanceBar} /></div>
+          )}
+        </div>
+      ) : null}
       <p className="sr-only" role="status" aria-live="polite">{announce}</p>
     </div>
   );

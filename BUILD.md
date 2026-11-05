@@ -1,10 +1,52 @@
 # Read and Rip: Build Log
 
-Last updated 2026-11-04. Product owner: Marty Joyner, Digital Learning and Education, USA Lacrosse.
+Last updated 2026-11-05. Product owner: Marty Joyner, Digital Learning and Education, USA Lacrosse.
 
 ## Where things stand
 
-**Phase 1 (playable core): built, in review.** Phase 0 (setup) is merged and live.
+**Phase 1.5 (art and feel, boys): built, in review.** Phase 1 and Phase 0 are merged
+and live.
+
+Phase 1.5 adds (gameplay rules and scoring unchanged):
+
+- Boys sprite art from `read-and-rip-sprites.zip`: 17 WebP sprites (660 KB, down from
+  9 MB of PNG), each at most 2x its on-screen size, built by `scripts/build-sprites.py`
+  with a manifest of draw sizes and anchors (`src/art/boys-sprites.json`). The PNGs stay
+  in the zip and never reach `public/` or the build. The spare stick head isn't shipped
+- Preloading with a loading screen (and a retry if it fails), started as soon as Boys
+  is picked
+- Scene layout per the spec (SPEC.md section 10), measured from the art: the crease
+  center in the background, the goal mouth, foot lines, helmet edges and stick pockets.
+  The navy carry and cocked sprites are drawn 1.46x larger than the other poses in the
+  source files; the manifest normalizes them so the helmet never jumps
+- Pose logic (`src/art/poses.ts`) and ball flight (`src/art/ball.ts`) as pure, tested
+  functions; renderer (`src/art/renderer.ts`) with crossfades, overshoot, idle bob,
+  shadow, curved ball with trail, net bulge and ripple, save burst, wide skip, press
+  ripple
+- New game screen per the style frame: slim navy HUD, red read-window bar, prompt pill,
+  compact feedback card with chips and an auto-advance bar; zone tags only in feedback
+- Goalie-mode mirrors held back (`mirrorReady: false`, D30): the validator reports 8
+- The girls field keeps the code-drawn scene inside the new layout until a girls set
+  exists
+- Adaptive resolution and a single opaque canvas to hold the frame budget (D37)
+
+Checked: validator (18 valid, 0 warnings, 8 mirrors held back), typecheck, 154 unit
+tests, production build. Played at 390 x 844 in both modes (before and after
+screenshots), reduced motion (the field is still between frames; only the read bar
+moves), loading screen, girls field. No console errors. Frame rate in headless
+Chromium, production build, 2x density, in-page autoplay, steady state after warm-up:
+
+| Mode | CPU 1x | CPU 4x throttle |
+| --- | --- | --- |
+| Shooter | 59.6 fps, p95 frame 16.7 ms, at 2x density | 58.5 fps, p95 16.8 ms, settled at 1x density |
+| Goalie | 60.0 fps, p95 16.7 ms, at 2x density | 56.6 fps, p95 33.3 ms, settled at 1x density |
+
+This machine has no GPU, so the browser rasterizes in software and the 4x throttle slows
+that too; a CPU profile put 91% of frame time in browser raster and compositing and
+about 5% in game code. Real phones composite on the GPU, so treat these as a worst case.
+
+<details><summary>Phase 1 (playable core), merged</summary>
+
 
 Phase 1 adds:
 
@@ -36,6 +78,8 @@ builds with drafts and a banner until launch (D23).
 
 Worth knowing: the clock stops during feedback, so a 30-second round takes about 60 to
 75 seconds of real time for a fast player.
+
+</details>
 
 <details><summary>Phase 0 (setup), done</summary>
 
@@ -83,10 +127,32 @@ Worth knowing: the clock stops during feedback, so a 30-second round takes about
 | D26 | The name is "Read and Rip", written out with "and" (Marty, 2026-11-04) | Reads cleanly aloud and in search |
 | D27 | Stay on GitHub Pages through playtesting; pick a usalacrosse.com address closer to launch (Marty, 2026-11-04) | No setup needed now. A subdomain later needs one DNS record |
 | D28 | Marty reviews boys and girls scenarios and is the only one who sets `status` to `approved`, until dedicated reviewers are named (Marty, 2026-11-04) | One clear sign-off for v1 content |
+| D29 | AI-generated game art is approved for this project; the rule only bans AI images presented as real photos (Marty, 2026-11-05) | The sprite set is illustrated game art, clearly not photography. Marty called this "D19 as clarified"; D19 in this log is the timed-notes decision, so it is logged here |
+| D30 | D16 amendment: mirrored copies flip zones and approach data only, never sprites. Goalie-mode mirrors are held back with `mirrorReady: false` until lefty shooter sprites exist; shooter-mode mirrors stay on (Marty, 2026-11-05) | Jersey numbers would read backwards, and in goalie mode the shooter's hand is part of the read |
+| D31 | Sprites ship as WebP at no more than 2x on-screen size, quality 85, built from the zip by `scripts/build-sprites.py`; the zip stays the source (Marty, 2026-11-05) | Small, sharp on 2x phones, and the originals never ship |
+| D32 | Goalie mode uses the gray goalie poses plus the navy screen-left dive until navy poses arrive (Marty, 2026-11-05) | Open item below |
+| D33 | The two boys goalie-mode samples with a left-handed shooter were flipped to right-handed (zones and angle flipped with them); boys goalie-mode lefties are held back in play and flagged by the validator (Claude default; confirmed by Marty, 2026-11-05) | The art has no lefty shooter. These are draft samples, so flipping kept a fake and difficulty 5 in boys goalie mode |
+| D34 | How results play out: shooter mode best or good is a goal, a miss skips wide, the bait and a timeout are saved; goalie mode best or good is a save, anything else is a goal against (Claude default; confirmed by Marty, 2026-11-05) | Matches the spec's goal, save and wide effects to each result |
+| D35 | Timed rounds auto-advance after feedback with no Next button (Space or Enter still skips); Practice shows Next and never auto-advances (Marty, 2026-11-05) | Keeps timed rounds flowing; Practice is for reading the note |
+| D36 | Card wording from the style frame: "Goal", "Save", "Wide", "Scored on", "Too late", "Bit on the fake", "Took the bait"; chips such as "Best spot +3" and "Fast read +1"; timed rounds show the best spot line, Practice the coaching note (Marty, 2026-11-05) | Matches the approved style frame while keeping every point in words |
+| D37 | One opaque canvas plus adaptive resolution: density capped at 2, stepping to 1.5 then 1 if frames average slower than about 55 fps (Claude, 2026-11-05) | Measured: two stacked full-screen canvases ran 28 fps at 4x throttle; one canvas at 1x density runs 58 |
+| D38 | Short screens crop up to 160 px of sky off the top before the scene shrinks; the bottom stays anchored and wider screens still letterbox (Marty, 2026-11-05) | Keeps goal zones at 51 to 55 px in a phone browser with toolbars (they were 43 px), above the 48 px minimum |
 
 ## Open questions
 
 None right now. New questions go here, one at a time.
+
+## Open items (art)
+
+- Navy goalie poses: ready, high screen-left, high screen-right, low screen-left, low
+  screen-right (D32)
+- A right-side dive (navy and gray); top screen-right saves use a lunge until then
+- Left-handed shooter sprites (navy and gray); goalie-mode mirrors and boys goalie-mode
+  lefties wait on these (D30, D33)
+- The girls sprite set; the girls field uses the code-drawn scene until then
+- Shooter cue poses for goalie mode (hands high, hands low, sidearm, pump fake). Today
+  the read comes from small body shifts on the cocked pose and the ball's flight
+- The spare stick head (back view) is in the zip but unused
 
 ## Next steps
 
@@ -115,7 +181,7 @@ Known limits to pick up in Phase 2:
 
 ## Needed from Marty
 
-See open questions above. Plus:
+See the open items above. Plus:
 
 - Approved USA Lacrosse logo files (SVG, light and dark backgrounds)
 - Any source material for cues (coaching drills, goalie training guides)
