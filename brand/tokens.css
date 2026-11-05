@@ -123,14 +123,14 @@
   --rr-dur-fast: 120ms;
   --rr-dur-med: 240ms;
   --rr-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --rr-card-delay: 140ms;
+  --rr-card-slide: 200ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root:not([data-reduced-motion='off']) {
     --rr-dur-fast: 0ms;
     --rr-dur-med: 0ms;
-    --rr-card-delay: 0ms;
+    --rr-card-slide: 0ms;
   }
 }
 
@@ -138,5 +138,5 @@
 :root[data-reduced-motion='on'] {
   --rr-dur-fast: 0ms;
   --rr-dur-med: 0ms;
-  --rr-card-delay: 0ms;
+  --rr-card-slide: 0ms;
 }

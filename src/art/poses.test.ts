@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { goalieCover, goalieSave, goalieTarget, READY, shooterTarget, shotPlan, RELEASE_HOLD_MS, type RepView } from './poses';
+import { goalieCover, goalieSave, shotPlan, type RepView } from './poses';
 import { MOUTH, SPRITES, fitFrame, placeSprite, toFrame, zoneCenter } from './manifest';
 import { sc } from '../game/__tests__/fixtures';
 
@@ -63,60 +63,25 @@ describe('goalie poses (never mirrored, picked by screen side)', () => {
     expect(goalieSave('low-left', 'gray').sprite).toBe('goalie_gray_low_screenleft');
     expect(goalieSave('low-right', 'gray').sprite).toBe('goalie_gray_low_screenright');
   });
-  it('shooter mode: ready in set up, then the cue', () => {
-    expect(goalieTarget(view({ phase: 'setup', repMs: -300 }))).toEqual(READY);
-    expect(goalieTarget(view({ repMs: 50 }))).toEqual(READY);
-    expect(goalieTarget(view({ repMs: 900 }))).toEqual(goalieCover('low-right'));
-  });
-  it('shooter mode bait: shows the bait open, then closes it at closeMs', () => {
-    const s = sc({ fake: true, baitZone: 'mid-left', closeMs: 900, bestZone: 'low-right', goodZones: [] });
-    const t = { windowMs: 2000, closeMs: 900 };
-    expect(goalieTarget(view({ scenario: s, timing: t, repMs: 500 }))).toEqual(goalieCover('mid-left'));
-    expect(goalieTarget(view({ scenario: s, timing: t, repMs: 950 }))).toEqual(goalieCover('low-right'));
-  });
-  it('goalie mode: you hold ready, then move to the tapped zone', () => {
-    const g = sc({ mode: 'goalie', cueType: 'hands-high', bestZone: 'top-left' });
-    expect(goalieTarget(view({ mode: 'goalie', scenario: g, repMs: 700 }))).toEqual(READY);
-    const after = view({ mode: 'goalie', scenario: g, phase: 'feedback', repMs: 900, resolveMs: 700, outcome: 'best', tapped: 'top-left' });
-    expect(goalieTarget(after).sprite).toBe('goalie_navy_dive_screenleft');
-  });
 });
 
-describe('shooter poses', () => {
-  it('carry, then cocked through the read, then release on tap, then follow', () => {
-    expect(shooterTarget(view({ phase: 'setup', repMs: -200 })).sprite).toBe('shooter_navy_carry');
-    expect(shooterTarget(view({ repMs: 400 })).sprite).toBe('shooter_navy_cocked');
-    const fb = { phase: 'feedback' as const, resolveMs: 600, outcome: 'best' as const, tapped: 'low-right' as const };
-    expect(shooterTarget(view({ ...fb, repMs: 650 })).sprite).toBe('shooter_navy_release');
-    expect(shooterTarget(view({ ...fb, repMs: 600 + RELEASE_HOLD_MS + 1 })).sprite).toBe('shooter_navy_follow');
-  });
-  it('releases at the buzzer on a timeout', () => {
-    expect(shooterTarget(view({ phase: 'feedback', resolveMs: 2000, outcome: 'timeout', repMs: 2050 })).sprite).toBe('shooter_navy_release');
-  });
-  it('goalie mode uses the gray number 12 shooter', () => {
-    const g = sc({ mode: 'goalie', cueType: 'hands-low' });
-    expect(shooterTarget(view({ mode: 'goalie', scenario: g, repMs: 300 })).sprite).toBe('shooter_gray_cocked');
-    expect(shooterTarget(view({ mode: 'goalie', scenario: g, repMs: 1500 })).sprite).toBe('shooter_gray_release');
-  });
-});
-
-describe('ball', () => {
-  it('shooter mode: no ball until you shoot; goal on a best or good spot', () => {
+describe('shot plan', () => {
+  const fb = (over: Partial<RepView>) => view({ phase: 'feedback', resolveMs: 500, repMs: 520, ...over });
+  it('shooter mode: no shot until you tap; the ball leaves after the load', () => {
     expect(shotPlan(view())).toBeNull();
-    expect(shotPlan(view({ phase: 'feedback', resolveMs: 500, outcome: 'good', tapped: 'mid-right', repMs: 520 }))).toMatchObject({ kind: 'goal', zone: 'mid-right', startMs: 500 });
+    expect(shotPlan(fb({ outcome: 'good', tapped: 'mid-right' }))).toMatchObject({ kind: 'goal', zone: 'mid-right', startMs: 620, contactAt: 1220, final: true });
   });
-  it('shooter mode: a miss skips wide, the bait gets saved', () => {
-    expect(shotPlan(view({ phase: 'feedback', resolveMs: 500, outcome: 'miss', tapped: 'top-left', repMs: 520 }))!.kind).toBe('wide');
-    expect(shotPlan(view({ phase: 'feedback', resolveMs: 500, outcome: 'bait', tapped: 'top-left', repMs: 520 }))!.kind).toBe('save');
+  it('shooter mode: a miss goes wide, clipping the pipe from the middle row; the bait and a timeout are saved', () => {
+    expect(shotPlan(fb({ outcome: 'miss', tapped: 'top-left' }))).toMatchObject({ kind: 'wide', nearPost: false });
+    expect(shotPlan(fb({ outcome: 'miss', tapped: 'mid-right' }))).toMatchObject({ kind: 'wide', nearPost: true });
+    expect(shotPlan(fb({ outcome: 'bait', tapped: 'top-left' }))!.kind).toBe('save');
+    expect(shotPlan(fb({ outcome: 'timeout', tapped: null, resolveMs: 2000 }))).toMatchObject({ kind: 'save', zone: 'low-right', startMs: 2120 });
   });
   it('goalie mode: the shot leaves at the release point and only finishes once resolved', () => {
     const g = sc({ mode: 'goalie', cueType: 'hands-low', bestZone: 'low-left' });
-    expect(shotPlan(view({ mode: 'goalie', scenario: g, repMs: 1000 }))).toBeNull();
     expect(shotPlan(view({ mode: 'goalie', scenario: g, repMs: 1500 }))).toMatchObject({ startMs: 1400, final: false, zone: 'low-left' });
-    const saved = view({ mode: 'goalie', scenario: g, phase: 'feedback', resolveMs: 1600, outcome: 'best', tapped: 'low-left', repMs: 1700 });
-    expect(shotPlan(saved)).toMatchObject({ kind: 'save', final: true });
-    const beat = view({ mode: 'goalie', scenario: g, phase: 'feedback', resolveMs: 1600, outcome: 'miss', tapped: 'top-right', repMs: 1700 });
-    expect(shotPlan(beat)).toMatchObject({ kind: 'goal', zone: 'low-left' });
+    expect(shotPlan(view({ mode: 'goalie', scenario: g, phase: 'feedback', resolveMs: 1600, outcome: 'best', tapped: 'low-left', repMs: 1700 }))).toMatchObject({ kind: 'save', final: true });
+    expect(shotPlan(view({ mode: 'goalie', scenario: g, phase: 'feedback', resolveMs: 1600, outcome: 'miss', tapped: 'top-right', repMs: 1700 }))).toMatchObject({ kind: 'goal', zone: 'low-left' });
   });
   it('goalie mode fake: an early tap does not pull the release forward', () => {
     const g = sc({ mode: 'goalie', cueType: 'stick-fake', fake: true, releaseMs: 1100, bestZone: 'low-left' });

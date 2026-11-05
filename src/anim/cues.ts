@@ -7,6 +7,7 @@
 import type { Scenario, Zone } from '../scenarios/types';
 import type { Timing } from '../game/ramp';
 import { colIndex, rowIndex } from '../game/zones';
+import { releasePoint } from '../game/timing';
 
 export interface GoaliePose {
   /** Body center, mouth space. */
@@ -90,7 +91,7 @@ export function shooterLoad(s: Scenario, target: Zone): ShooterPose {
 
 /** Release time inside the window: releaseMs for fakes, otherwise 70% in. */
 export function releaseAt(t: Timing): number {
-  return t.releaseMs ?? t.windowMs * 0.7;
+  return releasePoint(t);
 }
 
 export function shooterTimeline(s: Scenario, t: Timing): Key<ShooterPose>[] {

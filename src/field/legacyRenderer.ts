@@ -1,6 +1,6 @@
 // The code-drawn scene, kept for fields with no sprite set yet (girls). Same stage API.
 import type { Zone } from '../scenarios/types';
-import type { StageRenderer } from '../art/renderer';
+import { NO_CAMERA, type CameraTransform, type StageRenderer } from '../art/renderer';
 import type { Rect } from '../art/manifest';
 import { drawScene, goalMouth, type SceneInput } from './scene';
 import { token } from '../ui/theme';
@@ -22,6 +22,8 @@ export class LegacyRenderer implements StageRenderer {
   mouth(w: number, h: number): Rect {
     return this.m ?? goalMouth(w, h, this.angle);
   }
-  ripple() {}
-  rippleZone(_z: Zone) {}
+  camera(): CameraTransform {
+    return NO_CAMERA;
+  }
+  tap(_z: Zone) {}
 }

@@ -50,13 +50,26 @@ describe('rep flow', () => {
     expect(g.reps).toHaveLength(1);
   });
 
-  it('feedback ends on its own after 1.2 s, or on Continue', () => {
+  it('the card comes after the shot: load, flight, a hold, then the reveal', () => {
+    const g = play(createGame(cfg(), pool, 1, 0), { type: 'tap', zone: 'low-right', now: 1000 });
+    // read opened at 600; tap 400 in; load 120; flight 600; hold 250
+    expect(g.last!.revealAt).toBe(600 + 400 + 120 + 600 + 250);
+    expect(g.reps[0].points).toBe(4); // scoring still happens at the tap
+  });
+
+  it('feedback lasts 1.2 s from the reveal; Continue cannot skip the shot', () => {
     let g = play(createGame(cfg(), pool, 1, 0), { type: 'tap', zone: 'low-right', now: 1000 });
-    expect(reduce(g, { type: 'tick', now: 2199 }).phase).toBe('feedback');
-    expect(reduce(g, { type: 'tick', now: 2200 }).phase).toBe('setup');
-    g = reduce(g, { type: 'continue', now: 1100 });
+    expect(reduce(g, { type: 'tick', now: 3169 }).phase).toBe('feedback');
+    expect(reduce(g, { type: 'tick', now: 3170 }).phase).toBe('setup');
+    expect(reduce(g, { type: 'continue', now: 1969 }).phase).toBe('feedback');
+    g = reduce(g, { type: 'continue', now: 1970 });
     expect(g.phase).toBe('setup');
-    expect(g.rep!.readStartsAt).toBe(1700);
+    expect(g.rep!.readStartsAt).toBe(2570);
+  });
+
+  it('reduced motion reveals sooner: three 250 ms still frames, then the card', () => {
+    const g = play(createGame(cfg({ reducedMotion: true }), pool, 1, 0), { type: 'tap', zone: 'low-right', now: 1000 });
+    expect(g.last!.revealAt).toBe(600 + 400 + 120 + 750);
   });
 });
 
@@ -64,9 +77,9 @@ describe('round clock', () => {
   it('runs in set up and read, stops in feedback', () => {
     let g = play(createGame(cfg(), pool, 1, 0), { type: 'tap', zone: 'low-right', now: 1000 });
     expect(clockLeftMs(g, 1000)).toBe(29_000);
-    expect(clockLeftMs(g, 2100)).toBe(29_000); // still feedback
-    g = reduce(g, { type: 'tick', now: 3200 }); // next rep set up started at 2200
-    expect(clockLeftMs(g, 3200)).toBe(28_000);
+    expect(clockLeftMs(g, 3000)).toBe(29_000); // the shot and the card: clock stopped
+    g = reduce(g, { type: 'tick', now: 3770 }); // next rep set up started at 3170
+    expect(clockLeftMs(g, 3770)).toBe(28_400);
   });
 
   it('a rep running past zero plays out and counts, then the round ends', () => {
@@ -74,7 +87,7 @@ describe('round clock', () => {
     g = reduce(g, { type: 'tap', zone: 'mid-right', now: 1500 }); // clock hit 0 at 1000, mid-read
     expect(g.phase).toBe('feedback');
     expect(g.reps[0].outcome).toBe('good');
-    g = reduce(g, { type: 'continue', now: 1600 });
+    g = reduce(g, { type: 'continue', now: g.last!.revealAt });
     expect(g.phase).toBe('summary');
     expect(g.endReason).toBe('clock');
   });
@@ -107,7 +120,8 @@ describe('ramp in a round', () => {
     let g = createGame(cfg(), [sc({ id: 'a', difficulty: 1 }), sc({ id: 'b', difficulty: 1 }), sc({ id: 'c', difficulty: 2 })], 1, 0);
     for (let i = 0; i < 3; i++) {
       const start = g.rep!.readStartsAt;
-      g = play(g, { type: 'tap', zone: 'low-right', now: start + 100 }, { type: 'continue', now: start + 200 });
+      g = play(g, { type: 'tap', zone: 'low-right', now: start + 100 });
+      g = reduce(g, { type: 'continue', now: g.last!.revealAt });
     }
     expect(g.ramp.level).toBe(2);
     expect(g.rep!.level).toBe(2);
@@ -141,7 +155,7 @@ describe('practice mode (D17)', () => {
     expect(g.rep!.level).toBeNull();
     g = reduce(g, { type: 'tap', zone: 'low-right', now: 700 });
     expect(reduce(g, { type: 'tick', now: 1e7 }).phase).toBe('feedback');
-    g = reduce(g, { type: 'continue', now: 800 });
+    g = reduce(g, { type: 'continue', now: g.last!.revealAt });
     expect(g.phase).toBe('setup');
     expect(g.ramp.level).toBe(1);
   });
@@ -157,7 +171,8 @@ describe('summary', () => {
     let g = createGame(cfg({ practice: true }), [sc({ id: 'only', mirror: false })], 1, 0);
     const tapAndGo = (zone: 'low-right' | 'top-left') => {
       const start = g.rep!.readStartsAt;
-      g = play(g, { type: 'tap', zone, now: start + 3000 }, { type: 'continue', now: start + 3100 });
+      g = play(g, { type: 'tap', zone, now: start + 3000 });
+      g = reduce(g, { type: 'continue', now: g.last!.revealAt });
     };
     tapAndGo('low-right');
     tapAndGo('top-left');

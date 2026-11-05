@@ -5,7 +5,7 @@ import type { Mode, Scenario, Zone } from '../scenarios/types';
 import type { Timing } from '../game/ramp';
 import type { Outcome } from '../game/scoring';
 import { colIndex, rowIndex } from '../game/zones';
-import { releaseAt } from '../anim/cues';
+import { shotSchedule } from '../game/timing';
 import type { SpriteName } from './manifest';
 
 export interface RepView {
@@ -73,90 +73,42 @@ export function goalieSave(z: Zone, team: 'gray' | 'navy'): ActorTarget {
 export type ShotKind = 'goal' | 'save' | 'wide';
 
 export interface ShotPlan {
-  /** Rep time (ms into the window) when the ball leaves the stick. */
+  /** Rep time when the ball leaves the stick. */
   startMs: number;
+  /** Rep time of contact (net, stick, or turf past the pipe). */
+  contactAt: number;
   /** Zone the ball heads for. */
   zone: Zone;
   kind: ShotKind;
   /** The rep has resolved, so the shot may finish. Before that the ball never quite arrives. */
   final: boolean;
+  /** A wide shot that clips a pipe on its way past (a small post ping). */
+  nearPost: boolean;
 }
 
-/** Where the ball goes. Null until the shooter releases. */
-export function shotPlan(v: RepView): ShotPlan | null {
+/** Where and when the ball goes. Null while there is no shot to plan yet. */
+export function shotPlan(v: RepView, reduced = false): ShotPlan | null {
   const s = v.scenario;
   const resolved = v.resolveMs !== null && v.outcome !== null;
+  if (v.mode === 'shooter' && !resolved) return null; // you shoot when you tap (or at the buzzer)
+  const sched = shotSchedule(v.mode, s.fake, v.timing, resolved ? v.resolveMs : null, reduced);
+  const base = { startMs: sched.releaseAt, contactAt: sched.contactAt, nearPost: false };
   if (v.mode === 'shooter') {
-    if (!resolved) return null; // you shoot when you tap (or at the buzzer)
-    const startMs = v.resolveMs!;
     switch (v.outcome!) {
       case 'best':
       case 'good':
-        return { startMs, zone: v.tapped!, kind: 'goal', final: true };
+        return { ...base, zone: v.tapped!, kind: 'goal', final: true };
       case 'miss':
-        return { startMs, zone: v.tapped!, kind: 'wide', final: true };
+        // Middle-row misses clip the pipe on the way past.
+        return { ...base, zone: v.tapped!, kind: 'wide', final: true, nearPost: rowIndex(v.tapped!) === 0 && colIndex(v.tapped!) !== 0 };
       case 'bait':
-        return { startMs, zone: v.tapped!, kind: 'save', final: true }; // the goalie closed it
+        return { ...base, zone: v.tapped!, kind: 'save', final: true }; // the goalie closed it
       default:
-        return { startMs, zone: s.bestZone, kind: 'save', final: true }; // too late: the goalie is set
+        return { ...base, zone: s.bestZone, kind: 'save', final: true }; // too late: the goalie is set
     }
   }
-  // Goalie mode: the opponent shoots at the best zone at the release point.
-  const release = releaseAt(v.timing);
-  const startMs = resolved && !s.fake ? Math.min(release, v.resolveMs!) : release;
-  if (v.repMs < startMs) return null;
-  if (!resolved) return { startMs, zone: s.bestZone, kind: 'goal', final: false };
+  // Goalie mode: the opponent shoots at the best zone.
+  if (!resolved) return { ...base, zone: s.bestZone, kind: 'goal', final: false };
   const saved = v.outcome === 'best' || v.outcome === 'good';
-  return { startMs, zone: saved ? v.tapped! : s.bestZone, kind: saved ? 'save' : 'goal', final: true };
-}
-
-export const RELEASE_HOLD_MS = 110;
-
-export function goalieTarget(v: RepView): ActorTarget {
-  const s = v.scenario;
-  if (v.phase === 'setup') return READY;
-  if (v.mode === 'goalie') {
-    // You are the goalie: hold ready, then go where you tapped.
-    if (v.resolveMs === null || !v.tapped) return READY;
-    return goalieSave(v.tapped, 'navy');
-  }
-  // Shooter mode: the opponent shows the cue, then reacts to your shot.
-  const shot = shotPlan(v);
-  if (shot && shot.kind === 'save' && v.repMs >= shot.startMs + 60) return goalieSave(shot.zone, 'gray');
-  const w = v.timing.windowMs;
-  const t = v.resolveMs !== null ? Math.max(v.repMs, v.resolveMs) : v.repMs;
-  if (s.fake && s.baitZone && v.timing.closeMs !== undefined) {
-    if (t < w * 0.05) return READY;
-    return t < v.timing.closeMs ? goalieCover(s.baitZone) : goalieCover(s.bestZone);
-  }
-  return t < w * 0.1 ? READY : goalieCover(s.bestZone);
-}
-
-export function shooterTarget(v: RepView): ActorTarget {
-  const team = v.mode === 'shooter' ? 'navy' : 'gray';
-  const carry = T(`shooter_${team}_carry`, 'helmet');
-  if (v.phase === 'setup') return carry;
-  const shot = shotPlan(v);
-  if (shot && v.repMs >= shot.startMs) {
-    return T(v.repMs < shot.startMs + RELEASE_HOLD_MS ? `shooter_${team}_release` : `shooter_${team}_follow`, 'helmet');
-  }
-  if (v.mode === 'shooter') return T('shooter_navy_cocked', 'helmet');
-  // Goalie mode: the read is in the shooter. Small body shifts stand in until more poses exist.
-  const s = v.scenario;
-  const rel = releaseAt(v.timing);
-  if (s.fake && v.repMs > rel * 0.15 && v.repMs < rel * 0.5) {
-    return T('shooter_gray_cocked', 'helmet', s.cueType === 'head-fake' ? { dx: 8, rot: 0.04 } : { dx: -12, rot: -0.06 });
-  }
-  switch (s.cueType) {
-    case 'hands-high':
-    case 'release-overhand':
-      return T('shooter_gray_cocked', 'helmet', { dy: -6, rot: -0.04 });
-    case 'hands-low':
-    case 'release-underhand':
-      return T('shooter_gray_cocked', 'helmet', { dy: 6, rot: 0.05 });
-    case 'release-sidearm':
-      return T('shooter_gray_cocked', 'helmet', { rot: 0.08 });
-    default:
-      return T('shooter_gray_cocked', 'helmet');
-  }
+  return { ...base, zone: saved ? v.tapped! : s.bestZone, kind: saved ? 'save' : 'goal', final: true };
 }
